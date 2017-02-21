@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Random;
 import java.util.Vector;
+import java.util.Scanner;
 
 import jneat.*;
 
@@ -40,27 +41,11 @@ import static pacman.game.Constants.*;
 @SuppressWarnings("unused")
 public class Executor
 {	
-	/*
-	 * THE CODE BELOW, UP UNTIL 'MAIN' IS MY MESS ABOUT WORK INVESTIGATING THE JNEAT PACKAGE
-	 * 
-	 */
 	
-	Population neatPop;
-	Vector neatOrgs;
-	double lastScore;
+	//The number of input and output nodes the neural network should have
+	private static int netInputs = 4;
+	private static int netOutputs = 1;
 	
-	private void initPop(){
-		//Genome startGenome = new Genome(1, 6, 1, 0, 100, false, 1.0); 
-		//neatPop = new Population(startGenome, 10);
-		neatPop = new Population(10 /* population size */, 6 /* network inputs */ , 1 /* network outputs */, 7 /* max index of nodes */, true /* recurrent */, 0.8 /* probability of connecting two nodes */ );
-		neatOrgs = neatPop.getOrganisms();
-	}
-	
-	private Network getBrain(int i){
-		// Extract the neural network from the jNEAT organism.
-		return ((Organism)neatOrgs.get(i)).getNet();
-	}
-
 	/**
 	 * The main method. Several options are listed - simply remove comments to use the option you want.
 	 *
@@ -69,75 +54,81 @@ public class Executor
 	public static void main(String[] args)
 	{
 		Executor exec=new Executor();
+		Scanner scanner = new Scanner(System.in);
 		
-		/*
-		 * 
-		 */
-		exec.initPop();
-		/*
-		 * 
-		 */
+		//Ask the user how big the population should be
+		int popSize;
+		System.out.println("Please input what size you want the population to be: ");
+		popSize = scanner.nextInt();
+		
+		//Ask the user how many generations to evolve and how many experiments to run during evaluation
+		int numGenerations;
+		int numExperiments;
+		System.out.println("Please input the number of generations to evolve: ");
+		numGenerations = scanner.nextInt();
+		System.out.println("Please input the number of experiments to run per evaluation: ");
+		numExperiments = scanner.nextInt();
+		scanner.close();
+		
+		Population networkPopulation = exec.initialisePopulation(popSize, netInputs, netOutputs);
 
-		/*
-		//run multiple games in batch mode - good for testing.
-		int numTrials=10;
-		exec.runExperiment(new RandomPacMan(),new RandomGhosts(),numTrials);
-		 */
+		exec.evolvePopulation(networkPopulation, numGenerations, numExperiments);
+
+		//Run final simulation to show progress of population visually
+		Vector organisms = networkPopulation.getOrganisms();
+		for(int i = 0;i < organisms.size();i++){
+			Network brain = ((Organism)organisms.get(i)).getNet();
+			exec.runGameTimed(new MyPacMan(brain),new StarterGhosts(), true);
+		}
+	}
+	
+	/*
+	 * Returns a new population of networks with the specified number of input and 
+	 * output nodes. @size determines the size of the population
+	 */
+	private Population initialisePopulation(int size, int numInputs, int numOutputs){
+		Population population;
 		
 		/*
-		//run a game in synchronous mode: game waits until controllers respond.
-		int delay=5;
-		boolean visual=true;
-		exec.runGame(new RandomPacMan(),new RandomGhosts(),visual,delay);
-  		 */
-		
-		///*
-		//run the game in asynchronous mode.
-		boolean visual=true;
-//		exec.runGameTimed(new NearestPillPacMan(),new AggressiveGhosts(),visual);
-		//exec.runGameTimed(new MyPacMan(exec.getBrain()),new StarterGhosts(),visual);
-//		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
-		//*/
-		
-		/*
-		//run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.
-		//time limit of DELAY ms still applies.
-		boolean visual=true;
-		boolean fixedTime=false;
-		exec.runGameTimedSpeedOptimised(new RandomPacMan(),new RandomGhosts(),fixedTime,visual);
+		Genome startGenome = new Genome(1, 6, 1, 0, 100, false, 1.0); 
+		population = new Population(startGenome, 10);
 		*/
 		
-		/*
-		//run game in asynchronous mode and record it to file for replay at a later stage.
-		boolean visual=true;
-		String fileName="replay.txt";
-		exec.runGameTimedRecorded(new HumanController(new KeyBoardInput()),new RandomGhosts(),visual,fileName);
-		//exec.replayGame(fileName,visual);
-		 */
-		
+		population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 0.8);
+		return population;
+	}
+	
+	/*
+	 * Evolves the given population through the specified amount of generations. numExperiments is the 
+	 * amount of games to play to determine fitness, averaging the score of the games. This is done due to 
+	 * the non deterministic nature of the game leading to varying performance of the controller. 
+	 */
+	private void evolvePopulation(Population networkPopulation, int numGenerations, int numExperiments){
 		int generation = 0;
-		
-		
-		for(int numGens = 0; numGens < 4; numGens++){
-			exec.neatOrgs = exec.neatPop.getOrganisms();
-			for(int i = 0;i < exec.neatOrgs.size();i++){
-				int scoreTotal = 0;
+		//Loop for each generation
+		for(int i = 0; i < numGenerations; i++){
+			
+			Vector organisms = networkPopulation.getOrganisms();
+			
+			//Loop for each organism in the population
+			for(int j = 0;j < organisms.size();j++){
 				
-				for(int j = 0; j<5; j++){
-					exec.runGameTimedSpeedOptimised(new MyPacMan(exec.getBrain(i)),new StarterGhosts(), false, false);
-					scoreTotal+= exec.lastScore;
+				//Extract the neural network from the population, ready for evaluation
+				Network brain = ((Organism)organisms.get(j)).getNet();
+				
+				int scoreTotal = 0;
+				//Loop for each experiment
+				for(int w = 0; w<numExperiments; w++){
+					double lastScore = this.runGameTimedSpeedOptimised(new MyPacMan(brain),new StarterGhosts(), false, false);
+					scoreTotal += lastScore;
 				}
 				
-				((Organism)exec.neatOrgs.get(i)).setFitness(scoreTotal/5);
-				System.out.println(scoreTotal/5);
+				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
+				System.out.println(scoreTotal/numExperiments);
 			}
+			
 			generation++;
-			exec.neatPop.epoch(generation);
-		}
-		
-		exec.neatOrgs = exec.neatPop.getOrganisms();
-		for(int i = 0;i < exec.neatOrgs.size();i++){
-			exec.runGameTimed(new MyPacMan(exec.getBrain(i)),new StarterGhosts(), true);
+			networkPopulation.epoch(generation);
 		}
 	}
 	
@@ -248,9 +239,6 @@ public class Executor
 	        	gv.repaint();
 		}
 		
-		//MY CODE
-		lastScore = game.getScore();
-		
 		pacManController.terminate();
 		ghostController.terminate();
 	}
@@ -264,7 +252,7 @@ public class Executor
      * @param fixedTime Whether or not to wait until 40ms are up even if both controllers already responded
 	 * @param visual Indicates whether or not to use visuals
      */
-    public void runGameTimedSpeedOptimised(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean fixedTime,boolean visual)
+    public double runGameTimedSpeedOptimised(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean fixedTime,boolean visual)
  	{
  		Game game=new Game(0);
  		
@@ -313,10 +301,13 @@ public class Executor
  	        	gv.repaint();
  		}
  		
- 		lastScore = game.getScore();
+ 		//Make note of the games score so that controller fitness can be evaluated
+ 		double lastScore = game.getScore();
  		
  		pacManController.terminate();
  		ghostController.terminate();
+ 		
+ 		return lastScore;
  	}
     
 	/**

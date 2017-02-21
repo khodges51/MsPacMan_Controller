@@ -19,6 +19,19 @@ import jneat.*;
  */
 public class MyPacMan extends Controller<MOVE>
 {
+
+	Network network;
+	
+	public MyPacMan(Network network){
+		this.network = network;
+	}
+	
+	public MOVE getMove(Game game, long timeDue) 
+	{			
+		return MOVE.NEUTRAL;
+	}
+	
+	/*
 	private MOVE myMove=MOVE.RIGHT;
 	
 	private Network controller;
@@ -32,18 +45,6 @@ public class MyPacMan extends Controller<MOVE>
 	public MOVE getMove(Game game, long timeDue) 
 	{			
 
-		
-		/*
-		 * 
-		 * 
-		 * 
-		 * */
-		 /*
-		  * 
-		  * 
-		  * 
-		*/
-		 
 		int currentNodeIndex=game.getPacmanCurrentNodeIndex();
 			
 		//get all active pills
@@ -60,15 +61,7 @@ public class MyPacMan extends Controller<MOVE>
 			
 		for(int i=0;i<activePowerPills.length;i++)
 			targetNodeIndices[activePills.length+i]=activePowerPills[i];		
-			
-		/*
-		* 
-		* 
-		* 
-		* 
-		*/
-			
-			
+
 		int numInputs = 4;
 		double inputs[] = new double[numInputs+1];
 		inputs[numInputs] = -1.0; // Bias
@@ -110,10 +103,7 @@ public class MyPacMan extends Controller<MOVE>
 		 double outputs[] = {0.0, 0.0, 0.0, 0.0};
 		 for(int i = 0; i < 4; i++){
 			 
-				/*
-				 * 
-				 * 
-				 */
+			
 				//FIND POSSIBLE DIRECTIONS
 				//FOR EACH
 				//CREATE ARRAYLIST OF NODES
@@ -181,12 +171,7 @@ public class MyPacMan extends Controller<MOVE>
 							}
 						}	
 			 		}
-								
-			/*
-			 * 
-			 * 
-			 */
-			 
+
 			 if(gPos[0] > 1000)
 				 System.out.println(gPos[0]);
 			 if(gPos[1] > 1000)
@@ -224,10 +209,6 @@ public class MyPacMan extends Controller<MOVE>
 		 
 		 return moves[largestIndex];
 		 
-		 /*
-		  * 
-		  * 
-		  */
 
 	}
 
@@ -235,4 +216,5 @@ public class MyPacMan extends Controller<MOVE>
 		// TODO Auto-generated method stub
 		return null;
 	}
+	*/
 }
