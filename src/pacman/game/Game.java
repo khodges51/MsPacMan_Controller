@@ -4,6 +4,7 @@ import java.util.BitSet;
 import java.util.EnumMap;
 import java.util.Random;
 import java.util.Map.Entry;
+
 import pacman.game.Constants.DM;
 import pacman.game.Constants.MOVE;
 import pacman.game.internal.Ghost;
@@ -11,7 +12,6 @@ import pacman.game.internal.Maze;
 import pacman.game.internal.Node;
 import pacman.game.internal.PacMan;
 import pacman.game.internal.PathsCache;
-
 import static pacman.game.Constants.*;
 
 /**
@@ -1189,6 +1189,26 @@ public final class Game
 	public MOVE[] getPossibleMoves(int nodeIndex,MOVE lastModeMade)
 	{
 		return currentMaze.graph[nodeIndex].allPossibleMoves.get(lastModeMade);
+	}
+	
+	/**
+	 * Returns true if the given move is one of the possible moves that Ms. Pac-Man can take this turn.
+	 * 
+	 * @param move 
+	 * 		The move to be checked
+	 * @return 
+	 * 		Is the move possible?
+	 * @author kuh1@aber.ac.uk
+	 */
+	public boolean isMovePossible(MOVE move){
+		MOVE[] possibleMoves = getPossibleMoves(getPacmanCurrentNodeIndex());
+		
+		for(int i = 0; i < possibleMoves.length; i++){
+			if(move == possibleMoves[i])
+				return true;
+		}
+		
+		return false;
 	}
 	
 	/**

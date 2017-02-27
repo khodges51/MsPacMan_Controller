@@ -3,7 +3,9 @@ package pacman.entries.pacman;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
+import pacman.Executor;
 import pacman.controllers.Controller;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
@@ -12,23 +14,87 @@ import pacman.game.Game;
 import pacman.game.GameView;
 import jneat.*;
 
-/*
- * This is the class you need to modify for your entry. In particular, you need to
- * fill in the getAction() method. Any additional classes you write should either
- * be placed in this package or sub-packages (e.g., game.entries.pacman.mypackage).
+/**
+ * 
+ * This class is where contestants put their code for Ms. Pac-Man, deciding which direction to
+ * travel each game cycle. My implementation will input information into a neural network for
+ * each possible direction of travel, and evaluate the output to determine which direction is most
+ * suitable. 
+ * 
+ * @author Kurt Hodges
+ * 		   kuh1@aber.ac.uk
+ *
  */
 public class MyPacMan extends Controller<MOVE>
 {
-
-	Network network;
+	private Network network;
 	
+	/**
+	 * Create a new controller for Ms. Pac-MAn
+	 * @param network
+	 * 			The neural network that the controller will use to make decisions
+	 */
 	public MyPacMan(Network network){
 		this.network = network;
 	}
 	
+	/**
+	 * This is the only method that needs to be implemented by contestants, it simply retruns
+	 * the direction to move this game cycle. 
+	 */
 	public MOVE getMove(Game game, long timeDue) 
 	{			
-		return MOVE.NEUTRAL;
+		int bestMoveIndex = 0;
+		double largestOutput = -1.0;
+		//FOR EACH DIRECTION
+		for(int i = 0; i < 4; i++){
+			double[] networkInputs = new double[Executor.netInputs];
+			double networkOutput;
+			
+			//If the move is possible
+			if(game.isMovePossible(MOVE.getByIndex(i))){
+				//GATHER INPUTS
+				PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(MOVE.getByIndex(i)));
+				for(GHOST ghost : GHOST.values()){
+					GhostTracker ghostTracker = new GhostTracker(ghost, game);
+					orderedGhosts.add(ghostTracker);
+				}
+				for(int j = 0; j < 4; j++){
+					GhostTracker ghostTracker = orderedGhosts.poll();
+					networkInputs[j] = ghostTracker.getDirectionalDistance(MOVE.getByIndex(i));
+					if(ghostTracker.getIsEdible()){
+						networkInputs[j+4] = 1.0;
+					}else{
+						networkInputs[j+4] = 0.0;
+					}
+	 			}
+				
+				//LOAD INPUTS
+				network.load_sensors(networkInputs);
+				 
+				 int net_depth = network.max_depth();
+				 // first activate from sensor to next layer....
+				 network.activate();
+				 // next activate each layer until the last level is reached
+				 for (int relax = 0; relax <= net_depth; relax++)
+				 {
+					 network.activate();
+				 }
+				 
+				 networkOutput = ((NNode) network.getOutputs().elementAt(0)).getActivation();
+			}else/*Else if the move isn't possible*/{
+				//Set the output to be the lowest possible value
+				networkOutput = -1.0;
+			}
+			
+			 //COMPARE OUTPUT WITH OTHER DIRECTIONS
+			 if(networkOutput > largestOutput){
+				 bestMoveIndex = i;
+				 largestOutput = networkOutput;
+			 }
+		}
+		
+		return MOVE.getByIndex(bestMoveIndex);
 	}
 	
 	/*
@@ -210,11 +276,6 @@ public class MyPacMan extends Controller<MOVE>
 		 return moves[largestIndex];
 		 
 
-	}
-
-	private char[] gPos(int i) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 	*/
 }

@@ -43,11 +43,12 @@ public class Executor
 {	
 	
 	//The number of input and output nodes the neural network should have
-	private static int netInputs = 4;
+	public static int netInputs = 8;
 	private static int netOutputs = 1;
 	
 	/**
-	 * The main method. Several options are listed - simply remove comments to use the option you want.
+	 * The main method. Asks the user some details about the experiments they want to run and 
+	 * initialises the experiments. 
 	 *
 	 * @param args the command line arguments
 	 */
@@ -80,6 +81,10 @@ public class Executor
 			Network brain = ((Organism)organisms.get(i)).getNet();
 			exec.runGameTimed(new MyPacMan(brain),new StarterGhosts(), true);
 		}
+		
+		
+		//For testing, comment out when not needed
+		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
 	}
 	
 	/*
@@ -89,12 +94,12 @@ public class Executor
 	private Population initialisePopulation(int size, int numInputs, int numOutputs){
 		Population population;
 		
-		/*
-		Genome startGenome = new Genome(1, 6, 1, 0, 100, false, 1.0); 
-		population = new Population(startGenome, 10);
-		*/
 		
-		population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 0.8);
+		Genome startGenome = new Genome(1, numInputs, numOutputs, 0, numInputs + numOutputs, true, 1.0); 
+		population = new Population(startGenome, size);
+		
+		
+		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 1.0);
 		return population;
 	}
 	
@@ -131,40 +136,6 @@ public class Executor
 			networkPopulation.epoch(generation);
 		}
 	}
-	
-    /**
-     * For running multiple games without visuals. This is useful to get a good idea of how well a controller plays
-     * against a chosen opponent: the random nature of the game means that performance can vary from game to game. 
-     * Running many games and looking at the average score (and standard deviation/error) helps to get a better
-     * idea of how well the controller is likely to do in the competition.
-     *
-     * @param pacManController The Pac-Man controller
-     * @param ghostController The Ghosts controller
-     * @param trials The number of trials to be executed
-     */
-    public void runExperiment(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
-    {
-    	double avgScore=0;
-    	
-    	Random rnd=new Random(0);
-		Game game;
-		
-		for(int i=0;i<trials;i++)
-		{
-			game=new Game(rnd.nextLong());
-			
-			while(!game.gameOver())
-			{
-		        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
-		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
-			}
-			
-			avgScore+=game.getScore();
-			System.out.println(i+"\t"+game.getScore());
-		}
-		
-		System.out.println(avgScore/trials);
-    }
 	
 	/**
 	 * Run a game in asynchronous mode: the game waits until a move is returned. In order to slow thing down in case

@@ -25,6 +25,17 @@ public final class Constants
 		NEUTRAL	{ public MOVE opposite(){return MOVE.NEUTRAL;	};};	
 		
 		public abstract MOVE opposite();
+		
+		//Return the move at the given index, as if the enum was an array
+		public static MOVE getByIndex(int index){
+			switch(index) {
+				case 0: return UP;
+				case 1: return RIGHT;
+				case 2: return DOWN;
+				case 3: return LEFT;
+				default: return NEUTRAL;
+			}
+		}
 	};
 	
 	/**
