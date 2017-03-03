@@ -13,7 +13,6 @@ import java.util.Vector;
 import java.util.Scanner;
 
 import jneat.*;
-
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
@@ -61,6 +60,7 @@ public class Executor
 		int popSize;
 		System.out.println("Please input what size you want the population to be: ");
 		popSize = scanner.nextInt();
+		Neat.p_pop_size = popSize;
 		
 		//Ask the user how many generations to evolve and how many experiments to run during evaluation
 		int numGenerations;
@@ -70,6 +70,7 @@ public class Executor
 		System.out.println("Please input the number of experiments to run per evaluation: ");
 		numExperiments = scanner.nextInt();
 		scanner.close();
+		
 		
 		Population networkPopulation = exec.initialisePopulation(popSize, netInputs, netOutputs);
 
@@ -82,7 +83,6 @@ public class Executor
 			exec.runGameTimed(new MyPacMan(brain),new StarterGhosts(), true);
 		}
 		
-		
 		//For testing, comment out when not needed
 		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
 	}
@@ -94,10 +94,8 @@ public class Executor
 	private Population initialisePopulation(int size, int numInputs, int numOutputs){
 		Population population;
 		
-		
 		Genome startGenome = new Genome(1, numInputs, numOutputs, 0, numInputs + numOutputs, true, 1.0); 
 		population = new Population(startGenome, size);
-		
 		
 		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 1.0);
 		return population;
@@ -109,7 +107,7 @@ public class Executor
 	 * the non deterministic nature of the game leading to varying performance of the controller. 
 	 */
 	private void evolvePopulation(Population networkPopulation, int numGenerations, int numExperiments){
-		int generation = 0;
+		int generation = 1;
 		//Loop for each generation
 		for(int i = 0; i < numGenerations; i++){
 			
@@ -129,11 +127,19 @@ public class Executor
 				}
 				
 				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
-				System.out.println(scoreTotal/numExperiments);
+				System.out.println(((Organism)organisms.get(j)).getFitness());
 			}
+			networkPopulation.epoch(generation);
+			
+			System.out.println();
+			System.out.println("EPOCH");
+			//System.out.print("MEAN FITNESS: ");
+			//System.out.println(networkPopulation.);
+			System.out.print("HIGHEST FITNESS SO FAR: ");
+			System.out.println(networkPopulation.getHighest_fitness());
+			System.out.println();
 			
 			generation++;
-			networkPopulation.epoch(generation);
 		}
 	}
 	

@@ -69,4 +69,12 @@ public class GhostTracker{
 			return true;
 		}
 	}
+	
+	/**
+	 * 
+	 * @return The ghost this tracker is tracking
+	 */
+	public GHOST getGhost(){
+		return ghost;
+	}
 }

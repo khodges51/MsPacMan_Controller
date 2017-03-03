@@ -1,17 +1,12 @@
 package pacman.entries.pacman;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.PriorityQueue;
 
 import pacman.Executor;
 import pacman.controllers.Controller;
-import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
-import pacman.game.GameView;
 import jneat.*;
 
 /**
@@ -48,44 +43,27 @@ public class MyPacMan extends Controller<MOVE>
 		double largestOutput = -1.0;
 		//FOR EACH DIRECTION
 		for(int i = 0; i < 4; i++){
-			double[] networkInputs = new double[Executor.netInputs];
+			double[] networkInputs;
 			double networkOutput;
+			MOVE direction = MOVE.getByIndex(i);
 			
 			//If the move is possible
-			if(game.isMovePossible(MOVE.getByIndex(i))){
-				//GATHER INPUTS
-				PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(MOVE.getByIndex(i)));
-				for(GHOST ghost : GHOST.values()){
-					GhostTracker ghostTracker = new GhostTracker(ghost, game);
-					orderedGhosts.add(ghostTracker);
-				}
-				for(int j = 0; j < 4; j++){
-					GhostTracker ghostTracker = orderedGhosts.poll();
-					networkInputs[j] = ghostTracker.getDirectionalDistance(MOVE.getByIndex(i));
-					if(ghostTracker.getIsEdible()){
-						networkInputs[j+4] = 1.0;
-					}else{
-						networkInputs[j+4] = 0.0;
-					}
-	 			}
-				
-				//LOAD INPUTS
-				network.load_sensors(networkInputs);
-				 
-				 int net_depth = network.max_depth();
-				 // first activate from sensor to next layer....
-				 network.activate();
-				 // next activate each layer until the last level is reached
-				 for (int relax = 0; relax <= net_depth; relax++)
-				 {
-					 network.activate();
-				 }
-				 
-				 networkOutput = ((NNode) network.getOutputs().elementAt(0)).getActivation();
+			if(game.isMovePossible(direction)){
+				networkInputs = gatherInputs(direction, game);
+				networkOutput = runNetwork(networkInputs);
 			}else/*Else if the move isn't possible*/{
 				//Set the output to be the lowest possible value
 				networkOutput = -1.0;
 			}
+			
+			/*
+			System.out.print("Direction: ");
+			System.out.print(direction);
+			System.out.print(" || IsPossible?: ");
+			System.out.print(game.isMovePossible(direction));
+			System.out.print(" || Net output: ");
+			System.out.println(networkOutput);
+			*/
 			
 			 //COMPARE OUTPUT WITH OTHER DIRECTIONS
 			 if(networkOutput > largestOutput){
@@ -94,7 +72,73 @@ public class MyPacMan extends Controller<MOVE>
 			 }
 		}
 		
+		/*
+		System.out.print("Chosen Move: ");
+		System.out.println(MOVE.getByIndex(bestMoveIndex));
+		*/
+		
 		return MOVE.getByIndex(bestMoveIndex);
+	}
+	
+	/*
+	 *  Returns the neural network inputs for the given direction
+	 */
+	private double[] gatherInputs(MOVE direction, Game game){
+		double[] networkInputs = new double[Executor.netInputs]; 
+		
+		/*
+		System.out.print("DIRECTION: ");
+		System.out.println(direction);
+		*/
+		
+		//GHOST DISTANCE 1st to 4th and are they edible??
+		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
+		for(GHOST ghost : GHOST.values()){
+			GhostTracker ghostTracker = new GhostTracker(ghost, game);
+			orderedGhosts.add(ghostTracker);
+		}
+		for(int j = 0; j < 4; j++){
+			GhostTracker ghostTracker = orderedGhosts.poll();
+			networkInputs[j] = ghostTracker.getDirectionalDistance(direction);
+			if(ghostTracker.getIsEdible()){
+				networkInputs[j+4] = 1.0;
+			}else{
+				networkInputs[j+4] = 0.0;
+			}
+			
+			/*
+			System.out.print("Ghost ");
+			System.out.print(j);
+			System.out.print(": ");
+			System.out.print(ghostTracker.getGhost());
+			System.out.print(" || Distance: ");
+			System.out.print(networkInputs[j]);
+			System.out.print(" || IsEdible? ");
+			System.out.println(networkInputs[j+4]);
+			*/
+			
+		}
+		
+		return networkInputs;
+	}
+	
+	/*
+	 *  Loads the neural network with the given inputs and returns the output
+	 */
+	private double runNetwork(double[] networkInputs){
+		network.load_sensors(networkInputs);
+		 
+		 int net_depth = network.max_depth();
+		 // first activate from sensor to next layer....
+		 network.activate();
+		 // next activate each layer until the last level is reached
+		 for (int relax = 0; relax <= net_depth; relax++)
+		 {
+			 network.activate();
+		 }
+		 
+		 double output = ((NNode) network.getOutputs().elementAt(0)).getActivation();
+		 return output;
 	}
 	
 	/*

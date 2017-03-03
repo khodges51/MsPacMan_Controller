@@ -154,7 +154,7 @@
 	   public Trait(int id, double p1, double p2, double p3, double p4, double p5, double p6, double p7, double p8, double p9)
 	  {
 	  
-		 params = new double[8];
+		 params = new double[Neat.p_num_trait_params];
 	  
 		 trait_id=id;
 	  
