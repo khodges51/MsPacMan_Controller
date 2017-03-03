@@ -11,106 +11,142 @@
 /** Is a superclass for definition of all parameters , threshold and others values. */
 	public class Neat {
    /** Probability  of mutating a single trait param */
-	  public static double p_trait_param_mut_prob;
+	  public static double p_trait_param_mut_prob
+	  =0.5;
    
    /** Power of mutation on a signle trait param */
-	  public static double p_trait_mutation_power;
+	  public static double p_trait_mutation_power
+	  =1.0;
    
    /** Amount that mutation_num changes for a trait change inside a link */
-	  public static double p_linktrait_mut_sig;
+	  public static double p_linktrait_mut_sig
+	  =1.0;
    
    /** Amount a mutation_num changes on a link connecting a node that changed its trait */
-	  public static double p_nodetrait_mut_sig;
+	  public static double p_nodetrait_mut_sig
+	  =0.5;
    
    /** The power of a linkweight mutation */
-	  public static double p_weight_mut_power;
+	  public static double p_weight_mut_power
+	  =2.5;
    
    /** Probability  that a link mutation which doesn't have to be recurrent will be made recurrent */
-	  public static double p_recur_prob;
+	  public static double p_recur_prob
+	  =0.1;
    
    /** factor multiply for gene not equal */
-	  public static double p_disjoint_coeff;
+	  public static double p_disjoint_coeff
+	  =1.0;
    
    /** factor multiply for gene excedeed */
-	  public static double p_excess_coeff;
+	  public static double p_excess_coeff
+	  =1.0;
+	  
    
    /** factor multiply weight difference */
-	  public static double p_mutdiff_coeff;
+	  public static double p_mutdiff_coeff
+	  =0.4;
    
    /** threshold under which two Genomes are the same species */
-	  public static double p_compat_threshold;
+	  public static double p_compat_threshold
+	  =3.0;
    
    /** How much does age matter in epoch cycle */
-	  public static double p_age_significance;
+	  public static double p_age_significance 
+	  = 1.0;
    
    /** Percent of ave fitness for survival */
-	  public static double p_survival_thresh;
+	  public static double p_survival_thresh
+	  =0.2;
    
    /** Probability  of a non-mating reproduction */
-	  public static double p_mutate_only_prob;
+	  public static double p_mutate_only_prob
+	  =0.25;
    
    /** Probability  of mutate trait */
-	  public static double p_mutate_random_trait_prob;
+	  public static double p_mutate_random_trait_prob
+	  =0.1;
    
    /** Probability  of mutate link trait */
-	  public static double p_mutate_link_trait_prob;
+	  public static double p_mutate_link_trait_prob
+	  =0.1;
    
    /** Probability  of mutate node trait */
-	  public static double p_mutate_node_trait_prob;
+	  public static double p_mutate_node_trait_prob
+	  =0.1;
    
    /** Probability  of mutate link weight */
-	  public static double p_mutate_link_weights_prob;
+	  public static double p_mutate_link_weights_prob
+	  =0.9;
    
    /** Probability  of mutate status ena->dis | dis-ena of gene */
-	  public static double p_mutate_toggle_enable_prob;
+	  public static double p_mutate_toggle_enable_prob
+	  =0.0;
    
    /** Probability  of switch status to ena of gene */
-	  public static double p_mutate_gene_reenable_prob;
+	  public static double p_mutate_gene_reenable_prob
+	  =0.0;
    
    /** Probability  of add a node to struct of genome */
-	  public static double p_mutate_add_node_prob;
+	  public static double p_mutate_add_node_prob
+	  =0.03;
    
    /** Probability  of add a link to struct of genome */
-	  public static double p_mutate_add_link_prob;
+	  public static double p_mutate_add_link_prob
+	  =0.08;
    
    /** Probability  of a mate being outside species */
-	  public static double p_interspecies_mate_rate;
+	  public static double p_interspecies_mate_rate
+	  =0.0010;
    
    /** Probability  of cross in a many point of two genome */
-	  public static double p_mate_multipoint_prob;
+	  public static double p_mate_multipoint_prob
+	  =0.3;
    
    /** Probability  of cross in a many point of two genome with media */
-	  public static double p_mate_multipoint_avg_prob;
+	  public static double p_mate_multipoint_avg_prob
+	  =0.3;
    
    /** Probability  of cross in a single point of two genome */
-	  public static double p_mate_singlepoint_prob;
+	  public static double p_mate_singlepoint_prob
+	  =0.3;
    
    /** Probability  of mating without mutation */
-	  public static double p_mate_only_prob;
+	  public static double p_mate_only_prob
+	  =0.2;
    
    /** Probability of forcing selection of ONLY links that are naturally recurrent */
-	  public static double p_recur_only_prob;
+	  public static double p_recur_only_prob
+	  =0.0;
    
    /** Size of population */
 	  public static int p_pop_size;
+	  //NEEDS TO BE SET BASED ON USER INPUT SURELY? IS IT EVER USED?
    
    /** Age where Species starts to be penalized */
-	  public static int p_dropoff_age;
+	  public static int p_dropoff_age 
+	  = 50; //COULD BE SOMETHING TO WATCH OUT FOR, IF 23 GENS DOES THE JOB THEN WHAT DO I DO ABOUT THIS?
+	  
    
    /** Number of tries mutate_add_link will attempt to find an open link */
-	  public static int p_newlink_tries;
+	  public static int p_newlink_tries
+	  =50;
    
    /** Tells to print population to file every n generations */
-	  public static int p_print_every;
+	  public static int p_print_every
+	  =10;
    
    /** The number of babies to siphen off to the champions */
-	  public static int p_babies_stolen;
+	  public static int p_babies_stolen
+	  =0;
    
    /** The number of runs for an experiment */
-	  public static int p_num_runs;
+	  public static int p_num_runs
+	  =1;
    
    /** number of a trait */
-	  public static int p_num_trait_params;
+	  public static int p_num_trait_params
+	  = 8;
    
    
 	  public static String d_trait_param_mut_prob;
@@ -160,6 +196,9 @@
 	  }                                                         
    
 	   public static void initbase() {
+		  
+		System.out.println("Initibase");
+		   
 		 p_trait_param_mut_prob = 0;
 		 p_trait_mutation_power = 0;
 		 p_linktrait_mut_sig = 0;

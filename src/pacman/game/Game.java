@@ -4,6 +4,7 @@ import java.util.BitSet;
 import java.util.EnumMap;
 import java.util.Random;
 import java.util.Map.Entry;
+
 import pacman.game.Constants.DM;
 import pacman.game.Constants.MOVE;
 import pacman.game.internal.Ghost;
@@ -11,7 +12,6 @@ import pacman.game.internal.Maze;
 import pacman.game.internal.Node;
 import pacman.game.internal.PacMan;
 import pacman.game.internal.PathsCache;
-
 import static pacman.game.Constants.*;
 
 /**
@@ -1192,6 +1192,26 @@ public final class Game
 	}
 	
 	/**
+	 * Returns true if the given move is one of the possible moves that Ms. Pac-Man can take this turn.
+	 * 
+	 * @param move 
+	 * 		The move to be checked
+	 * @return 
+	 * 		Is the move possible?
+	 * @author kuh1@aber.ac.uk
+	 */
+	public boolean isMovePossible(MOVE move){
+		MOVE[] possibleMoves = getPossibleMoves(getPacmanCurrentNodeIndex());
+		
+		for(int i = 0; i < possibleMoves.length; i++){
+			if(move == possibleMoves[i])
+				return true;
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Gets the neighbouring nodes from the current node index.
 	 *
 	 * @param nodeIndex The current node index
@@ -1633,6 +1653,28 @@ public final class Game
 	}
 	
 	/**
+	 * Modified version of the function, makes sure that the shortest path is found in the direction
+	 * of lastMoveMade and only in that direction.
+	 * 
+	 * Gets the shortest path taking into account the last move made (i.e., no reversals).
+	 * This is approximate only as the path is computed greedily. A more accurate path can be obtained
+	 * using A* which is slightly more costly.
+	 *
+	 * @param fromNodeIndex The node index from where to start (i.e., current position)
+	 * @param toNodeIndex The target node index
+	 * @param lastMoveMade The last move made
+	 * @return the shortest path from start to target
+	 * @author Modified by Kurt Hodges
+	 */
+	public int[] getShortestPath_absolute(int fromNodeIndex,int toNodeIndex,MOVE lastMoveMade)
+	{
+		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
+			return new int[0];
+		
+		return caches[mazeIndex].getPathFromA2B(getNeighbour(fromNodeIndex, lastMoveMade),toNodeIndex,lastMoveMade);
+	}
+	
+	/**
 	 * Similar to getApproximateShortestPath but returns the distance of the path only. It is slightly
 	 * more efficient.
 	 *  
@@ -1664,5 +1706,26 @@ public final class Game
 			return 0;
 
 		return caches[mazeIndex].getPathDistanceFromA2B(fromNodeIndex,toNodeIndex,lastMoveMade);
+	}
+	
+	/**
+	 * Modified version of the function, makes sure that the shortest path is found in the direction
+	 * of lastMoveMade and only in that direction.
+	 * 
+	 * Similar to getShortestPath but returns the distance of the path only. It is slightly
+	 * more efficient.
+	 *  
+	 * @param fromNodeIndex The node index from where to start (i.e., current position)
+	 * @param toNodeIndex The target node index
+	 * @param lastMoveMade The last move made
+	 * @return the exact distance of the path
+	 * @author Modified by Kurt Hodges
+	 */
+	public int getShortestPathDistance_absolute(int fromNodeIndex,int toNodeIndex,MOVE lastMoveMade)
+	{
+		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
+			return 0;
+
+		return caches[mazeIndex].getPathDistanceFromA2B(getNeighbour(fromNodeIndex, lastMoveMade),toNodeIndex,lastMoveMade);
 	}
 }

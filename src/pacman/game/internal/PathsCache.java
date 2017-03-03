@@ -1,12 +1,15 @@
 package pacman.game.internal;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Set;
+
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
+import pacman.game.GameView;
 
 /*
  * Pre-computes paths for more efficient execution of the game. It is a tradeoff between loading times, execution speed,
@@ -372,8 +375,9 @@ class DNode
 				}
 			}
 
-		if(bestIndex!=-1)
+		if(bestIndex!=-1){
 			return closestJunctions.get(bestIndex);
+		}
 		else
 			return null;
 	}
