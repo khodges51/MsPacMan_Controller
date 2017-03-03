@@ -34,7 +34,7 @@ public class MyPacMan extends Controller<MOVE>
 	}
 	
 	/**
-	 * This is the only method that needs to be implemented by contestants, it simply retruns
+	 * This is the only method that needs to be implemented by contestants, it simply returns
 	 * the direction to move this game cycle. 
 	 */
 	public MOVE getMove(Game game, long timeDue) 
@@ -43,7 +43,7 @@ public class MyPacMan extends Controller<MOVE>
 		double largestOutput = -1.0;
 		//FOR EACH DIRECTION
 		for(int i = 0; i < 4; i++){
-			double[] networkInputs;
+			double[] networkInputs = new double[Executor.netInputs];
 			double networkOutput;
 			MOVE direction = MOVE.getByIndex(i);
 			
@@ -56,26 +56,14 @@ public class MyPacMan extends Controller<MOVE>
 				networkOutput = -1.0;
 			}
 			
-			/*
-			System.out.print("Direction: ");
-			System.out.print(direction);
-			System.out.print(" || IsPossible?: ");
-			System.out.print(game.isMovePossible(direction));
-			System.out.print(" || Net output: ");
-			System.out.println(networkOutput);
-			*/
-			
 			 //COMPARE OUTPUT WITH OTHER DIRECTIONS
 			 if(networkOutput > largestOutput){
 				 bestMoveIndex = i;
 				 largestOutput = networkOutput;
 			 }
+			 
+			 //consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
 		}
-		
-		/*
-		System.out.print("Chosen Move: ");
-		System.out.println(MOVE.getByIndex(bestMoveIndex));
-		*/
 		
 		return MOVE.getByIndex(bestMoveIndex);
 	}
@@ -85,11 +73,6 @@ public class MyPacMan extends Controller<MOVE>
 	 */
 	private double[] gatherInputs(MOVE direction, Game game){
 		double[] networkInputs = new double[Executor.netInputs]; 
-		
-		/*
-		System.out.print("DIRECTION: ");
-		System.out.println(direction);
-		*/
 		
 		//GHOST DISTANCE 1st to 4th and are they edible??
 		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
@@ -104,21 +87,8 @@ public class MyPacMan extends Controller<MOVE>
 				networkInputs[j+4] = 1.0;
 			}else{
 				networkInputs[j+4] = 0.0;
-			}
-			
-			/*
-			System.out.print("Ghost ");
-			System.out.print(j);
-			System.out.print(": ");
-			System.out.print(ghostTracker.getGhost());
-			System.out.print(" || Distance: ");
-			System.out.print(networkInputs[j]);
-			System.out.print(" || IsEdible? ");
-			System.out.println(networkInputs[j+4]);
-			*/
-			
+			}			
 		}
-		
 		return networkInputs;
 	}
 	
@@ -139,6 +109,67 @@ public class MyPacMan extends Controller<MOVE>
 		 
 		 double output = ((NNode) network.getOutputs().elementAt(0)).getActivation();
 		 return output;
+	}
+	
+	/*
+	 * 
+	 * 	Below is code for console output. 
+	 *  This will most likely only be used for testing, and so should probably be deleted at the
+	 *  end of the project. For now proof of testing will be screen shots and tables until I can
+	 *  figure out appropriate unit testing.
+	 * 
+	 */
+	
+	/*
+	 * Output to the console the current direction, whether it is a possible move, and the
+	 * network output.
+	 */
+	private void consoleOut_isMovePossible(MOVE direction, Game game, double networkOutput){
+		System.out.print("Direction: ");
+		System.out.print(direction);
+		System.out.print(" || IsPossible?: ");
+		System.out.print(game.isMovePossible(direction));
+		System.out.print(" || Net output: ");
+		System.out.println(networkOutput);
+	}
+	
+	/*
+	 * Output to the console the network inputs and outputs and the current direction
+	 */
+	private void consoleOut_inputsAndOutputs(MOVE direction, double[] networkInputs, double networkOutput){
+		System.out.print("Direction: ");
+		System.out.println(direction);
+		System.out.print("Network inputs: ");
+		System.out.println(stringifyArray(networkInputs));
+		System.out.print("Network output");
+		System.out.println(networkOutput);
+	}
+	
+	/*
+	 * Output to the console information about the decision the made by the controller
+	 */
+	private void consoleOut_chosenMove(MOVE direction){
+		System.out.print("Chosen Move: ");
+		System.out.println(direction);
+	}
+	
+	/*
+	 * Return the given array of numbers in text form
+	 */
+	private String stringifyArray(double[] networkInputs){
+		String text = new String();
+		
+		text += "(";
+		
+		for(int i = 0; i < networkInputs.length; i++){
+			text += networkInputs[i];
+			if(i < networkInputs.length - 1)
+				text += ", ";
+		}
+		
+		text += ")";
+		
+		return text;
 	}
 	
 	/*

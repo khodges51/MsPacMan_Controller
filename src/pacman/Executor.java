@@ -36,6 +36,11 @@ import static pacman.game.Constants.*;
  * visuals. Competitors should implement their controllers in game.entries.ghosts and 
  * game.entries.pacman respectively. The skeleton classes are already provided. The package
  * structure should not be changed (although you may create sub-packages in these packages).
+ * 
+ * @author joseatovar
+ * 		   https://github.com/joseatovar,
+ * 		   Kurt Hodges
+ * 		   kuh1@aber.ac.uk
  */
 @SuppressWarnings("unused")
 public class Executor
@@ -50,6 +55,7 @@ public class Executor
 	 * initialises the experiments. 
 	 *
 	 * @param args the command line arguments
+	 * @author kuh1@aber.ac.uk
 	 */
 	public static void main(String[] args)
 	{
@@ -71,7 +77,6 @@ public class Executor
 		numExperiments = scanner.nextInt();
 		scanner.close();
 		
-		
 		Population networkPopulation = exec.initialisePopulation(popSize, netInputs, netOutputs);
 
 		exec.evolvePopulation(networkPopulation, numGenerations, numExperiments);
@@ -82,7 +87,7 @@ public class Executor
 			Network brain = ((Organism)organisms.get(i)).getNet();
 			exec.runGameTimed(new MyPacMan(brain),new StarterGhosts(), true);
 		}
-		
+	
 		//For testing, comment out when not needed
 		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
 	}
@@ -90,6 +95,7 @@ public class Executor
 	/*
 	 * Returns a new population of networks with the specified number of input and 
 	 * output nodes. @size determines the size of the population
+	 * @author kuh1@aber.ac.uk
 	 */
 	private Population initialisePopulation(int size, int numInputs, int numOutputs){
 		Population population;
@@ -104,7 +110,8 @@ public class Executor
 	/*
 	 * Evolves the given population through the specified amount of generations. numExperiments is the 
 	 * amount of games to play to determine fitness, averaging the score of the games. This is done due to 
-	 * the non deterministic nature of the game leading to varying performance of the controller. 
+	 * the non deterministic nature of the game leading to varying performance of the controller.
+	 * @author kuh1@aber.ac.uk 
 	 */
 	private void evolvePopulation(Population networkPopulation, int numGenerations, int numExperiments){
 		int generation = 1;
@@ -129,18 +136,26 @@ public class Executor
 				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
 				System.out.println(((Organism)organisms.get(j)).getFitness());
 			}
+			
 			networkPopulation.epoch(generation);
-			
-			System.out.println();
-			System.out.println("EPOCH");
-			//System.out.print("MEAN FITNESS: ");
-			//System.out.println(networkPopulation.);
-			System.out.print("HIGHEST FITNESS SO FAR: ");
-			System.out.println(networkPopulation.getHighest_fitness());
-			System.out.println();
-			
 			generation++;
+			
+			consoleOut_lastGen(networkPopulation);
 		}
+	}
+	
+	/*
+	 * Output information about the last generation to the console
+	 * @author kuh1@aber.ac.uk
+	 */
+	private void consoleOut_lastGen(Population networkPopulation){
+		System.out.println();
+		System.out.println("EPOCH");
+		//System.out.print("MEAN FITNESS: ");
+		//System.out.println(networkPopulation.);
+		System.out.print("HIGHEST FITNESS SO FAR: ");
+		System.out.println(networkPopulation.getHighest_fitness());
+		System.out.println();
 	}
 	
 	/**

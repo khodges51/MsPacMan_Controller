@@ -1,8 +1,10 @@
 package pacman.entries.pacman;
 
+import java.awt.Color;
 import java.util.Comparator;
 
 import pacman.game.Game;
+import pacman.game.GameView;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 
@@ -50,7 +52,7 @@ public class GhostTracker{
 		double distance = maxDistance;
 
 		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
-			realDistance = game.getShortestPathDistance(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
+			realDistance = game.getShortestPathDistance_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
 			if(realDistance < maxDistance){
 				distance = realDistance;
 			}
@@ -76,5 +78,32 @@ public class GhostTracker{
 	 */
 	public GHOST getGhost(){
 		return ghost;
+	}
+	
+	/**
+	 * This is a test version of the function, it draws a coloured line to the ghost from
+	 * Ms Pac.Man
+	 * 
+	 * Gets the directional distance from Ms. Pac-Man to the ghost. This distance is the
+	 * path distance, I.E. if you travelled through the maze to reach the ghost. 
+	 * @param direction
+	 * 		The direction from Ms. Pac-Man's perspective
+	 * @return
+	 * 		The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
+	 * 		that direction. 
+	 */
+	public double getDirectionalDistance_drawn(MOVE direction, Color color){
+		double realDistance;
+		double distance = maxDistance;
+
+		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
+			realDistance = game.getShortestPathDistance_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
+			GameView.addPoints(game,color,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction));
+			if(realDistance < maxDistance){
+				distance = realDistance;
+			}
+		}
+		
+		return distance;
 	}
 }
