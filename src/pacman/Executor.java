@@ -50,6 +50,9 @@ public class Executor
 	public static int netInputs = 8;
 	private static int netOutputs = 1;
 	
+	private double bestFitness = 0.0;
+	private Network bestNetwork;
+	
 	/**
 	 * The main method. Asks the user some details about the experiments they want to run and 
 	 * initialises the experiments. 
@@ -81,6 +84,13 @@ public class Executor
 
 		exec.evolvePopulation(networkPopulation, numGenerations, numExperiments);
 
+		//Run the best network to show final controller performance visually
+		if(exec.bestNetwork != null){
+			System.out.println("Running simulation with the best scoring network");
+			exec.runGameTimed(new MyPacMan(exec.bestNetwork),new StarterGhosts(), true);
+		}
+		
+		System.out.println("Running simulations of the final generation of networks");
 		//Run final simulation to show progress of population visually
 		Vector organisms = networkPopulation.getOrganisms();
 		for(int i = 0;i < organisms.size();i++){
@@ -135,6 +145,12 @@ public class Executor
 				
 				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
 				System.out.println(((Organism)organisms.get(j)).getFitness());
+				
+				//Check if this is the best score so far
+				if(((Organism)organisms.get(j)).getFitness() > bestFitness){
+					bestFitness = ((Organism)organisms.get(j)).getFitness();
+					bestNetwork = brain;
+				}
 			}
 			
 			networkPopulation.epoch(generation);
