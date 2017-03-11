@@ -1386,6 +1386,41 @@ public final class Game
 		
 		return target;
 	}
+	
+	/**
+	 * 
+	 * @param fromNodeIndex the from node index
+	 * @param targetNodeIndices the target node indices
+	 * @param direction the direction you want to search in
+	 * @param maxDistance the radius in which you want to search for nodes
+	 * @author Modified by Kurt Hodges
+	 * @return the index of the closest node in the given direction, up to a distance of maxDistance away
+	 */
+	public int getClosestNodeIndexFromNodeIndex_Directional(int fromNodeIndex,int[] targetNodeIndices, MOVE direction, double maxDistance)
+	{
+		double minDistance=Integer.MAX_VALUE;
+		int target=-1;
+		
+		for(int i=0;i<targetNodeIndices.length;i++)
+		{				
+			double distance_manhattan=0;
+			double distance_directional=0;
+			
+			distance_manhattan = getDistance(fromNodeIndex, targetNodeIndices[i], DM.MANHATTAN);
+			
+			if(distance_manhattan < maxDistance){
+				distance_directional=getShortestPathDistance_absolute(fromNodeIndex, targetNodeIndices[i], direction);
+				
+				if(distance_directional<minDistance)
+				{
+					minDistance=distance_directional;
+					target=targetNodeIndices[i];	
+				}
+			}
+		}
+		
+		return target;
+	}
 
 	/**
 	 * Gets the farthest node index from node index.

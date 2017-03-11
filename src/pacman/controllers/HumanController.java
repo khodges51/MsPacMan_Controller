@@ -2,10 +2,13 @@ package pacman.controllers;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import pacman.Executor;
 import pacman.game.Game;
+import pacman.game.GameView;
+import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.entries.pacman.*;
@@ -38,10 +41,25 @@ public class HumanController extends Controller<MOVE>
 
     public MOVE getMove(Game game,long dueTime)
     {	
-    	MOVE direction = MOVE.DOWN;
+    	MOVE testDirection = MOVE.DOWN;
     	
-    	//Run some tests to help verify if stories are complete
-    	//test_DirectionalDistanceToGhosts(game, direction);
+    	//Direction specific tests
+    	if(game.isMovePossible(testDirection)){
+    		//Run some tests to help verify if stories are complete
+        	//test_DirectionalDistanceToGhosts(game, testDirection);
+    		//test_DirectionalDistanceToNearestPill(game, testDirection, Color.red);
+    		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, Color.red);
+    		test_DirectionalDistanceToNearestJunction(game, testDirection, Color.red);
+    	}
+    	
+    	Color[] colors = {Color.RED, Color.YELLOW, Color.CYAN, Color.GREEN};
+    	//Tests for all 4 directions
+    	for(int i = 0; i < 4; i++){
+    		testDirection = MOVE.getByIndex(i);
+    		if(game.isMovePossible(testDirection)){
+            	//test_DirectionalDistanceToNearestPill(game, testDirection, colors[i]);
+        	}
+    	}
     	
     	//Return a move based on keyboard input
     	switch(input.getKey())
@@ -87,6 +105,90 @@ public class HumanController extends Controller<MOVE>
 		}else/*Else if the move isn't possible*/{
 			System.out.println("NOT POSSIBLE MOVE");
 		}
+		System.out.println();
+    }
+    
+    /*
+     * 
+     */
+    private void test_DirectionalDistanceToNearestJunction(Game game, MOVE direction, Color color){
+    	
+		System.out.print("DIRECTION: ");
+		System.out.println(direction);
+		
+		int pacManIndex=game.getPacmanCurrentNodeIndex();
+		int[] junctionIndicies = game.getJunctionIndices();
+	
+		double distance = 100;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, junctionIndicies, direction, 100);
+		
+		if(closestNode != -1){
+			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
+		}
+		
+		if(distance < 100 && distance >= 0){
+			System.out.println(distance);
+			GameView.addPoints(game,color,game.getShortestPath_absolute(pacManIndex, closestNode, direction));
+		}else{
+			System.out.println(100);
+		}
+		
+		System.out.println();
+    }
+    
+    /*
+     * 
+     */
+    private void test_DirectionalDistanceToNearestPill(Game game, MOVE direction, Color color){
+    	
+		System.out.print("DIRECTION: ");
+		System.out.println(direction);
+		
+		int pacManIndex=game.getPacmanCurrentNodeIndex();
+		int[] pillsIndicies = game.getActivePillsIndices();
+	
+		double distance = 100;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, 100);
+		
+		if(closestNode != -1){
+			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
+		}
+		
+		if(distance < 100 && distance >= 0){
+			System.out.println(distance);
+			GameView.addPoints(game,color,game.getShortestPath_absolute(pacManIndex, closestNode, direction));
+		}else{
+			System.out.println(100);
+		}
+		
+		System.out.println();
+    }
+    
+    /*
+     * 
+     */
+    private void test_DirectionalDistanceToNearestPowerPill(Game game, MOVE direction, Color color){
+    	
+		System.out.print("DIRECTION: ");
+		System.out.println(direction);
+		
+		int pacManIndex=game.getPacmanCurrentNodeIndex();
+		int[] pillsIndicies = game.getActivePowerPillsIndices();
+	
+		double distance = 500;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, 500);
+		
+		if(closestNode != -1){
+			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
+		}
+		
+		if(distance < 500 && distance >= 0){
+			System.out.println(distance);
+			GameView.addPoints(game,color,game.getShortestPath_absolute(pacManIndex, closestNode, direction));
+		}else{
+			System.out.println(100);
+		}
+		
 		System.out.println();
     }
 }

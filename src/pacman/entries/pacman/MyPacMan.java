@@ -1,9 +1,11 @@
 package pacman.entries.pacman;
 
+import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import pacman.Executor;
 import pacman.controllers.Controller;
+import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
@@ -49,7 +51,7 @@ public class MyPacMan extends Controller<MOVE>
 			
 			//If the move is possible
 			if(game.isMovePossible(direction)){
-				networkInputs = gatherInputs(direction, game);
+				networkInputs = gatherInputs(direction, game.getActivePillsIndices(), game);
 				networkOutput = runNetwork(networkInputs);
 			}else/*Else if the move isn't possible*/{
 				//Set the output to be the lowest possible value
@@ -62,7 +64,7 @@ public class MyPacMan extends Controller<MOVE>
 				 largestOutput = networkOutput;
 			 }
 			 
-			 //consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
+			// consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
 		}
 		
 		return MOVE.getByIndex(bestMoveIndex);
@@ -71,9 +73,76 @@ public class MyPacMan extends Controller<MOVE>
 	/*
 	 *  Returns the neural network inputs for the given direction
 	 */
-	private double[] gatherInputs(MOVE direction, Game game){
+	private double[] gatherInputs(MOVE direction, int[] pillsIndicies, Game game){
 		double[] networkInputs = new double[Executor.netInputs]; 
 		
+		networkInputs = getGhostInfo(direction, networkInputs, game);
+		
+		int pacManIndex=game.getPacmanCurrentNodeIndex();
+		
+		//GET DISTANCE TO NEAREST PILL
+		//---------------------------
+		double maxDistance = 100;
+		double distance = maxDistance;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, maxDistance);
+		
+		if(closestNode != -1){
+			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
+		}
+		
+		if(distance < maxDistance && distance >= 0){
+			networkInputs[8] = distance;
+		}else{
+			networkInputs[8] = maxDistance;
+		}
+		
+		//GET DISTANCE TO NEAREST POWER PILL
+		//---------------------------
+		pillsIndicies = game.getActivePowerPillsIndices();
+		
+		maxDistance = 500;
+		distance = maxDistance;
+		closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, maxDistance);
+		
+		if(closestNode != -1){
+			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
+		}
+		
+		if(distance < maxDistance && distance >= 0){
+			networkInputs[9] = distance;
+		}else{
+			networkInputs[9] = maxDistance;
+		}
+		//-----------
+		//END SEGMENT
+		
+		//GET DISTANCE TO NEAREST JUNCTION
+		//---------------------------
+		int[] junctionIndicies = game.getJunctionIndices();
+				
+		maxDistance = 100;
+		distance = maxDistance;
+		closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, junctionIndicies, direction, maxDistance);
+				
+		if(closestNode != -1){
+			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
+		}
+				
+		if(distance < maxDistance && distance >= 0){
+			networkInputs[10] = distance;
+		}else{
+				networkInputs[10] = maxDistance;
+		}
+		//-----------
+		//END SEGMENT
+		
+		return networkInputs;
+	}
+	
+	/*
+	 * 
+	 */
+	private double[] getGhostInfo(MOVE direction, double[] networkInputs, Game game){
 		//GHOST DISTANCE 1st to 4th and are they edible??
 		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
 		for(GHOST ghost : GHOST.values()){
@@ -85,10 +154,11 @@ public class MyPacMan extends Controller<MOVE>
 			networkInputs[j] = ghostTracker.getDirectionalDistance(direction);
 			if(ghostTracker.getIsEdible()){
 				networkInputs[j+4] = 1.0;
-			}else{
-				networkInputs[j+4] = 0.0;
-			}			
+				}else{
+					networkInputs[j+4] = 0.0;
+				}			
 		}
+		
 		return networkInputs;
 	}
 	
