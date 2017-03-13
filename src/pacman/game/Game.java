@@ -1386,6 +1386,47 @@ public final class Game
 		
 		return target;
 	}
+	
+	/**
+	 * Get the closest node index from node index, in the given direction. 
+	 * 
+	 * @param fromNodeIndex the from node index
+	 * @param targetNodeIndices the target node indices
+	 * @param direction the direction you want to search in
+	 * @param maxDistance the radius in which you want to search for nodes
+	 * @author Modified by Kurt Hodges
+	 * @return the index of the closest node in the given direction, up to a distance of maxDistance away
+	 */
+	public int getClosestNodeIndexFromNodeIndex_Directional(int fromNodeIndex,int[] targetNodeIndices, MOVE direction, double maxDistance)
+	{
+		double minDistance=Integer.MAX_VALUE;
+		int target=-1;
+		
+		for(int i=0;i<targetNodeIndices.length;i++)
+		{				
+			double distance_manhattan=0;
+			double distance_directional=0;
+			
+			//Find the Manhattan distance
+			distance_manhattan = getDistance(fromNodeIndex, targetNodeIndices[i], DM.MANHATTAN);
+			
+			//Limit the search space based upon Manhattan distance, this is because of performance concerns
+			if(distance_manhattan < maxDistance){
+				
+				//Perform a A* path search and calculate path distance for this node
+				//The performance loss here is questionable and should be investigated
+				distance_directional=getShortestPathDistance_absolute(fromNodeIndex, targetNodeIndices[i], direction);
+				
+				if(distance_directional<minDistance)
+				{
+					minDistance=distance_directional;
+					target=targetNodeIndices[i];	
+				}
+			}
+		}
+		
+		return target;
+	}
 
 	/**
 	 * Gets the farthest node index from node index.
@@ -1671,6 +1712,7 @@ public final class Game
 		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
 			return new int[0];
 		
+		//Start the search from the neignhouring node in the direction of 'lastMoveMade'
 		return caches[mazeIndex].getPathFromA2B(getNeighbour(fromNodeIndex, lastMoveMade),toNodeIndex,lastMoveMade);
 	}
 	
@@ -1726,6 +1768,7 @@ public final class Game
 		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
 			return 0;
 
+		//Start the search from the neignhouring node in the direction of 'lastMoveMade'
 		return caches[mazeIndex].getPathDistanceFromA2B(getNeighbour(fromNodeIndex, lastMoveMade),toNodeIndex,lastMoveMade);
 	}
 }

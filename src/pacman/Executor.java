@@ -47,8 +47,11 @@ public class Executor
 {	
 	
 	//The number of input and output nodes the neural network should have
-	public static int netInputs = 8;
+	public static int netInputs = 13;
 	private static int netOutputs = 1;
+	
+	private double bestFitness = 0.0;
+	private Network bestNetwork;
 	
 	/**
 	 * The main method. Asks the user some details about the experiments they want to run and 
@@ -61,6 +64,9 @@ public class Executor
 	{
 		Executor exec=new Executor();
 		Scanner scanner = new Scanner(System.in);
+		
+		//For testing, comment out when not needed
+		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
 		
 		//Ask the user how big the population should be
 		int popSize;
@@ -81,15 +87,19 @@ public class Executor
 
 		exec.evolvePopulation(networkPopulation, numGenerations, numExperiments);
 
+		//Run the best network to show final controller performance visually
+		if(exec.bestNetwork != null){
+			System.out.println("Running simulation with the best scoring network");
+			exec.runGameTimed(new MyPacMan(exec.bestNetwork),new StarterGhosts(), true);
+		}
+		
+		System.out.println("Running simulations of the final generation of networks");
 		//Run final simulation to show progress of population visually
 		Vector organisms = networkPopulation.getOrganisms();
 		for(int i = 0;i < organisms.size();i++){
 			Network brain = ((Organism)organisms.get(i)).getNet();
 			exec.runGameTimed(new MyPacMan(brain),new StarterGhosts(), true);
 		}
-	
-		//For testing, comment out when not needed
-		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
 	}
 	
 	/*
@@ -135,12 +145,17 @@ public class Executor
 				
 				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
 				System.out.println(((Organism)organisms.get(j)).getFitness());
+				
+				//Check if this is the best score so far
+				if(((Organism)organisms.get(j)).getFitness() > bestFitness){
+					bestFitness = ((Organism)organisms.get(j)).getFitness();
+					bestNetwork = brain;
+				}
 			}
 			
 			networkPopulation.epoch(generation);
+			consoleOut_lastGen(networkPopulation, generation);
 			generation++;
-			
-			consoleOut_lastGen(networkPopulation);
 		}
 	}
 	
@@ -148,9 +163,10 @@ public class Executor
 	 * Output information about the last generation to the console
 	 * @author kuh1@aber.ac.uk
 	 */
-	private void consoleOut_lastGen(Population networkPopulation){
+	private void consoleOut_lastGen(Population networkPopulation, int genNum){
 		System.out.println();
-		System.out.println("EPOCH");
+		System.out.print("EPOCH ");
+		System.out.println(genNum);
 		//System.out.print("MEAN FITNESS: ");
 		//System.out.println(networkPopulation.);
 		System.out.print("HIGHEST FITNESS SO FAR: ");
