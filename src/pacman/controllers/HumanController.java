@@ -43,13 +43,19 @@ public class HumanController extends Controller<MOVE>
     {	
     	MOVE testDirection = MOVE.DOWN;
     	
+    	//double amountPowerPillsLeft = (double)game.getNumberOfActivePowerPills() / (double)game.getNumberOfPowerPills();
+		//System.out.println(amountPowerPillsLeft);
+    	
+    	//double amountPillsLeft = (double)game.getNumberOfActivePills() / (double)game.getNumberOfPills();
+    	//System.out.println(amountPillsLeft);
+    	
     	//Direction specific tests
     	if(game.isMovePossible(testDirection)){
     		//Run some tests to help verify if stories are complete
         	//test_DirectionalDistanceToGhosts(game, testDirection);
     		//test_DirectionalDistanceToNearestPill(game, testDirection, Color.red);
     		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, Color.red);
-    		test_DirectionalDistanceToNearestJunction(game, testDirection, Color.red);
+    		//test_DirectionalDistanceToNearestJunction(game, testDirection, Color.red);
     	}
     	
     	Color[] colors = {Color.RED, Color.YELLOW, Color.CYAN, Color.GREEN};
@@ -58,8 +64,12 @@ public class HumanController extends Controller<MOVE>
     		testDirection = MOVE.getByIndex(i);
     		if(game.isMovePossible(testDirection)){
             	//test_DirectionalDistanceToNearestPill(game, testDirection, colors[i]);
+        		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, colors[i]);
+        		test_DirectionalDistanceToNearestJunction(game, testDirection, colors[i]);
         	}
     	}
+    	
+    	System.out.println();
     	
     	//Return a move based on keyboard input
     	switch(input.getKey())
@@ -132,8 +142,6 @@ public class HumanController extends Controller<MOVE>
 		}else{
 			System.out.println(100);
 		}
-		
-		System.out.println();
     }
     
     /*
@@ -160,8 +168,6 @@ public class HumanController extends Controller<MOVE>
 		}else{
 			System.out.println(100);
 		}
-		
-		System.out.println();
     }
     
     /*
@@ -188,7 +194,5 @@ public class HumanController extends Controller<MOVE>
 		}else{
 			System.out.println(100);
 		}
-		
-		System.out.println();
     }
 }

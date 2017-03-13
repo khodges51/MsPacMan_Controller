@@ -1388,6 +1388,7 @@ public final class Game
 	}
 	
 	/**
+	 * Get the closest node index from node index, in the given direction. 
 	 * 
 	 * @param fromNodeIndex the from node index
 	 * @param targetNodeIndices the target node indices
@@ -1406,9 +1407,14 @@ public final class Game
 			double distance_manhattan=0;
 			double distance_directional=0;
 			
+			//Find the Manhattan distance
 			distance_manhattan = getDistance(fromNodeIndex, targetNodeIndices[i], DM.MANHATTAN);
 			
+			//Limit the search space based upon Manhattan distance, this is because of performance concerns
 			if(distance_manhattan < maxDistance){
+				
+				//Perform a A* path search and calculate path distance for this node
+				//The performance loss here is questionable and should be investigated
 				distance_directional=getShortestPathDistance_absolute(fromNodeIndex, targetNodeIndices[i], direction);
 				
 				if(distance_directional<minDistance)
@@ -1706,6 +1712,7 @@ public final class Game
 		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
 			return new int[0];
 		
+		//Start the search from the neignhouring node in the direction of 'lastMoveMade'
 		return caches[mazeIndex].getPathFromA2B(getNeighbour(fromNodeIndex, lastMoveMade),toNodeIndex,lastMoveMade);
 	}
 	
@@ -1761,6 +1768,7 @@ public final class Game
 		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
 			return 0;
 
+		//Start the search from the neignhouring node in the direction of 'lastMoveMade'
 		return caches[mazeIndex].getPathDistanceFromA2B(getNeighbour(fromNodeIndex, lastMoveMade),toNodeIndex,lastMoveMade);
 	}
 }

@@ -49,9 +49,14 @@ public class MyPacMan extends Controller<MOVE>
 			double networkOutput;
 			MOVE direction = MOVE.getByIndex(i);
 			
+			//GET NON-DIRECTIONAL INPUTS
+			networkInputs = getConstantInputs(networkInputs, 0, game);
+			
 			//If the move is possible
 			if(game.isMovePossible(direction)){
-				networkInputs = gatherInputs(direction, game.getActivePillsIndices(), game);
+				//GET DIRECTIONAL INPUTS
+				networkInputs = getDirectionalInputs(networkInputs, 2, direction, game);
+				//FEED THE NETWORK INPUTS AND STORE OUTPUT
 				networkOutput = runNetwork(networkInputs);
 			}else/*Else if the move isn't possible*/{
 				//Set the output to be the lowest possible value
@@ -64,77 +69,44 @@ public class MyPacMan extends Controller<MOVE>
 				 largestOutput = networkOutput;
 			 }
 			 
-			// consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
+			//consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
 		}
 		
 		return MOVE.getByIndex(bestMoveIndex);
 	}
 	
 	/*
+	 *  Returns the neural network inputs that do'nt depend upon direction
+	 */
+	private double[] getConstantInputs(double[] networkInputs, int startIndex, Game game){
+		//GET POPORTION OF REMAINING PILLS
+		double amountPillsLeft = (double)game.getNumberOfActivePills() / (double)game.getNumberOfPills();
+		networkInputs[startIndex] = amountPillsLeft;
+		
+		//GET POPORTION OF REMAINING Power PILLS
+		double amountPowerPillsLeft = (double)game.getNumberOfActivePowerPills() / (double)game.getNumberOfPowerPills();
+		networkInputs[startIndex + 1] = amountPowerPillsLeft;
+		
+		return networkInputs;
+	}
+	
+	/*
 	 *  Returns the neural network inputs for the given direction
 	 */
-	private double[] gatherInputs(MOVE direction, int[] pillsIndicies, Game game){
-		double[] networkInputs = new double[Executor.netInputs]; 
+	private double[] getDirectionalInputs(double[] networkInputs, int startIndex, MOVE direction, Game game){
 		
-		networkInputs = getGhostInfo(direction, networkInputs, game);
+		networkInputs = getGhostInfo(networkInputs, startIndex, direction, game);
 		
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
-		//GET DISTANCE TO NEAREST PILL
-		//---------------------------
-		double maxDistance = 100;
-		double distance = maxDistance;
-		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, maxDistance);
+		//Get distance to closest pill
+		networkInputs[startIndex + 8] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 100, game);
 		
-		if(closestNode != -1){
-			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
-		}
+		//Get distance to closest power pill
+		networkInputs[startIndex + 9] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 500, game);
 		
-		if(distance < maxDistance && distance >= 0){
-			networkInputs[8] = distance;
-		}else{
-			networkInputs[8] = maxDistance;
-		}
-		
-		//GET DISTANCE TO NEAREST POWER PILL
-		//---------------------------
-		pillsIndicies = game.getActivePowerPillsIndices();
-		
-		maxDistance = 500;
-		distance = maxDistance;
-		closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, maxDistance);
-		
-		if(closestNode != -1){
-			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
-		}
-		
-		if(distance < maxDistance && distance >= 0){
-			networkInputs[9] = distance;
-		}else{
-			networkInputs[9] = maxDistance;
-		}
-		//-----------
-		//END SEGMENT
-		
-		//GET DISTANCE TO NEAREST JUNCTION
-		//---------------------------
-		int[] junctionIndicies = game.getJunctionIndices();
-				
-		maxDistance = 100;
-		distance = maxDistance;
-		closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, junctionIndicies, direction, maxDistance);
-				
-		if(closestNode != -1){
-			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
-		}
-				
-		if(distance < maxDistance && distance >= 0){
-			networkInputs[10] = distance;
-		}else{
-				networkInputs[10] = maxDistance;
-		}
-		//-----------
-		//END SEGMENT
+		//Get distance to closest junction
+		networkInputs[startIndex + 10] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 100, game);
 		
 		return networkInputs;
 	}
@@ -142,14 +114,14 @@ public class MyPacMan extends Controller<MOVE>
 	/*
 	 * 
 	 */
-	private double[] getGhostInfo(MOVE direction, double[] networkInputs, Game game){
+	private double[] getGhostInfo(double[] networkInputs, int startIndex, MOVE direction, Game game){
 		//GHOST DISTANCE 1st to 4th and are they edible??
 		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
 		for(GHOST ghost : GHOST.values()){
 			GhostTracker ghostTracker = new GhostTracker(ghost, game);
 			orderedGhosts.add(ghostTracker);
 		}
-		for(int j = 0; j < 4; j++){
+		for(int j = startIndex; j < startIndex + 4; j++){
 			GhostTracker ghostTracker = orderedGhosts.poll();
 			networkInputs[j] = ghostTracker.getDirectionalDistance(direction);
 			if(ghostTracker.getIsEdible()){
@@ -160,6 +132,26 @@ public class MyPacMan extends Controller<MOVE>
 		}
 		
 		return networkInputs;
+	}
+	
+	/*
+	 *  Get the distance to the nearest node from the given position in the given direction. The search will be in the 
+	 * 'targetIndicies' array, e.g pass in the indices of all active pills to find the distance to the nearest active pill 
+	 *	in the given direction. 
+	 */
+	private double getDirectionalDistanceToNearest(MOVE direction, int searchStartIndex, int[] targetIndicies, double maxDistance, Game game){
+		double distance = maxDistance;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(searchStartIndex, targetIndicies, direction, maxDistance);
+		
+		if(closestNode != -1){
+			distance = game.getShortestPathDistance_absolute(searchStartIndex, closestNode, direction);
+		}
+		
+		if(distance < maxDistance && distance >= 0){
+			return distance;
+		}else{
+			return maxDistance;
+		}
 	}
 	
 	/*
@@ -241,186 +233,4 @@ public class MyPacMan extends Controller<MOVE>
 		
 		return text;
 	}
-	
-	/*
-	private MOVE myMove=MOVE.RIGHT;
-	
-	private Network controller;
-	
-	private static final int MIN_DISTANCE=20;	//if a ghost is this close, run away
-	
-	public MyPacMan(Network controller){
-		this.controller = controller;
-	}
-	
-	public MOVE getMove(Game game, long timeDue) 
-	{			
-
-		int currentNodeIndex=game.getPacmanCurrentNodeIndex();
-			
-		//get all active pills
-		int[] activePills=game.getActivePillsIndices();
-			
-		//get all active power pills
-		int[] activePowerPills=game.getActivePowerPillsIndices();
-			
-		//create a target array that includes all ACTIVE pills and power pills
-		int[] targetNodeIndices=new int[activePills.length+activePowerPills.length];
-			
-		for(int i=0;i<activePills.length;i++)
-			targetNodeIndices[i]=activePills[i];
-			
-		for(int i=0;i<activePowerPills.length;i++)
-			targetNodeIndices[activePills.length+i]=activePowerPills[i];		
-
-		int numInputs = 4;
-		double inputs[] = new double[numInputs+1];
-		inputs[numInputs] = -1.0; // Bias
-		//INITIALIZE DISTANCE TO BE FARTHERST
-		for(int k = 0; k < 4; k++){
-			inputs[k] = 100;
-		}
-		
-		MOVE moves[] = {MOVE.LEFT, MOVE.DOWN, MOVE.UP, MOVE.RIGHT};
-		
-		for(int i = 0; i < 4; i++){
-			boolean shouldBreak = false;
-			List<Integer> myCrapIdeaArray = new ArrayList<Integer>();// = new int[targetNodeIndices.length];
-			//System.arraycopy(targetNodeIndices, 0, myCrapIdeaArray, 0, targetNodeIndices.length);
-			
-			for(int z = 0; z < targetNodeIndices.length; z++){
-				myCrapIdeaArray.add(targetNodeIndices[z]);
-			}
-			
-			for(int j = 0; j < myCrapIdeaArray.size(); j++){
-				if(moves[i] == game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(),game.getClosestNodeIndexFromNodeIndex(currentNodeIndex,myCrapIdeaArray.stream().mapToInt(Integer::intValue).toArray(),DM.PATH),DM.PATH)){
-					//inputs[i] = distToNode;
-					inputs[i] = game.getShortestPathDistance(game.getPacmanCurrentNodeIndex(), game.getClosestNodeIndexFromNodeIndex(currentNodeIndex,myCrapIdeaArray.stream().mapToInt(Integer::intValue).toArray(),DM.PATH));
-					shouldBreak = true;
-				}else{
-					Integer myInt = game.getClosestNodeIndexFromNodeIndex(currentNodeIndex,myCrapIdeaArray.stream().mapToInt(Integer::intValue).toArray(),DM.PATH);
-					//Remove current closest node
-					myCrapIdeaArray.remove(myInt);
-				}
-				
-				if(shouldBreak){
-					j += targetNodeIndices.length;
-				}
-			}
-		}
-		
-		MOVE[] possibleMoves = game.getPossibleMoves(game.getPacmanCurrentNodeIndex());
-		
-		 double outputs[] = {0.0, 0.0, 0.0, 0.0};
-		 for(int i = 0; i < 4; i++){
-			 
-			
-				//FIND POSSIBLE DIRECTIONS
-				//FOR EACH
-				//CREATE ARRAYLIST OF NODES
-				//DELETE NEIGHBOURING NODE IN ALL OTHER POSSIBLE DIRECTIONS
-				//FIND SHORTEST DISTRANCE TO EACH GHOST
-				//CHECK USING THE LINE FUNCTION
-				//SHOULD PROB INITIALIZE INPUTS AS MAX DIST
-				
-			 	double gPos[] = {1000, 1000, 1000, 1000};
-			 
-			 	boolean isMovePoss = false;
-			 	int f = 0;
-			 	for(int h = 0; h < possibleMoves.length; h++){
-			 		if(possibleMoves[h] == moves[i]){
-			 			isMovePoss = true;
-			 			f = h;
-			 		}
-			 	}
-			 	
-			 		if(isMovePoss){
-						MOVE lastMove = MOVE.NEUTRAL;
-						if(possibleMoves[f] == MOVE.UP){
-							lastMove = MOVE.DOWN;
-						}else if(possibleMoves[f] == MOVE.DOWN){
-							lastMove = MOVE.UP;
-						}else if(possibleMoves[f] == MOVE.LEFT){
-							lastMove = MOVE.RIGHT;
-						}else if(possibleMoves[f] == MOVE.RIGHT){
-							lastMove = MOVE.LEFT;
-						}
-						
-						//FOR EACH GHOST COLLECT DATA ABOUT THIS DIRECTION
-						//THIS INFO IS THE INPUT FOR ONE ROUND OF THE ANN...
-						//I MIGHT NEED TO RESTRUCTER THE ABOVE LOOP TO LOOP THROUGH ALL MOVES AND CHECK IF IT IS A POSSIBLE MOVE....
-						for(GHOST ghost : GHOST.values())
-						{
-							if(game.getGhostEdibleTime(ghost)==0 && game.getGhostLairTime(ghost)==0){
-								if(ghost == GHOST.BLINKY){
-									//System.out.println("Blinky");
-									gPos[0] = game.getShortestPathDistance(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), lastMove);
-								}else if(ghost == GHOST.INKY){ 
-									//System.out.println("Inky");
-									gPos[1] = game.getShortestPathDistance(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), lastMove);
-								}else if(ghost == GHOST.PINKY){
-									//System.out.println("Pinky");
-									gPos[2] = game.getShortestPathDistance(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), lastMove);
-								}else if(ghost == GHOST.SUE){
-									//System.out.println("Sue");
-									gPos[3] = game.getShortestPathDistance(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), lastMove);
-								}
-							}else if(game.getGhostEdibleTime(ghost)>0 && game.getGhostLairTime(ghost)==0){
-								if(ghost == GHOST.BLINKY){
-									//System.out.println("Blinky");
-									gPos[0] = 1000;
-								}else if(ghost == GHOST.INKY){
-									//System.out.println("Inky");
-									gPos[1] = 1000;
-								}else if(ghost == GHOST.PINKY){
-									//System.out.println("Pinky");
-									gPos[2] = 1000;
-								}else if(ghost == GHOST.SUE){
-									//System.out.println("Sue");
-									gPos[3] = 1000;
-								}
-							}
-						}	
-			 		}
-
-			 if(gPos[0] > 1000)
-				 System.out.println(gPos[0]);
-			 if(gPos[1] > 1000)
-				 System.out.println(gPos[1]);
-			 if(gPos[2] > 1000)
-				 System.out.println(gPos[2]);
-			 if(gPos[3] > 1000)
-				 System.out.println(gPos[3]);
-			 
-			 double inputsss[] = {inputs[i], gPos[0], gPos[1], gPos[2], gPos[3], inputs[4]};
-			 
-			 controller.load_sensors(inputsss);
-			 
-			 int net_depth = controller.max_depth();
-			 // first activate from sensor to next layer....
-			controller.activate();
-			 // next activate each layer until the last level is reached
-			 for (int relax = 0; relax <= net_depth; relax++)
-			 {
-			      controller.activate();
-			 }
-			 
-			 outputs[i] = ((NNode) controller.getOutputs().elementAt(0)).getActivation();
-		 }
-		 
-		 //Find largest output
-		 int largestIndex = 0;
-		 double largestVal = -1.0;
-		 for(int i = 0; i < 4; i++){
-			 if(outputs[i] > largestVal){
-				 largestIndex = i;
-				 largestVal = outputs[i];
-			 }
-		 }
-		 
-		 return moves[largestIndex];
-		 
-
-	}
-	*/
 }
