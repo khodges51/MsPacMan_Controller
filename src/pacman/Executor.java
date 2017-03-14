@@ -47,7 +47,7 @@ public class Executor
 {	
 	
 	//The number of input and output nodes the neural network should have
-	public static int netInputs = 13;
+	public static int netInputs = 21;
 	private static int netOutputs = 1;
 	
 	private double bestFitness = 0.0;

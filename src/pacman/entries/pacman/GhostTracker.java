@@ -62,13 +62,38 @@ public class GhostTracker{
 	}
 	
 	/**
-	 * @return is this ghost edible currently
+	 * 
+	 * @param direction
+	 * @return
 	 */
-	public boolean getIsEdible(){
+	public double doesPathContainJunction(MOVE direction){
+		double doesContainJunction = 0.0;
+		int[] shortestPath = new int[0];
+		
+		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
+			shortestPath = game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
+		}
+		
+		for(int i = 0; i < shortestPath.length; i++){
+			if(game.isJunction(shortestPath[i]))
+					doesContainJunction = 1.0;
+		}
+		
+		if(game.getGhostLairTime(ghost)!=0){
+			doesContainJunction = 1.0;
+		}
+		
+		return doesContainJunction;
+	}
+	
+	/**
+	 * @return 1.0 if ghost is edible or 0.0 if ghost is not
+	 */
+	public double isEdible(){
 		if(game.getGhostEdibleTime(ghost)==0){
-			return false;
+			return 0.0;
 		}else{
-			return true;
+			return 1.0;
 		}
 	}
 	
@@ -106,4 +131,33 @@ public class GhostTracker{
 		
 		return distance;
 	}
+	
+	/**
+	 * 
+	 * @param direction
+	 * @return
+	 */
+	public double doesPathContainJunction_Drawn(MOVE direction, Color color){
+		double doesContainJunction = 0.0;
+		int[] shortestPath = new int[0];
+		
+		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
+			shortestPath = game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
+			//GameView.addPoints(game,color,shortestPath);
+		}
+		
+		for(int i = 0; i < shortestPath.length; i++){
+			if(game.isJunction(shortestPath[i])){
+					doesContainJunction = 1.0;
+					GameView.addPoints(game, color, shortestPath[i]);
+			}
+		}
+		
+		if(game.getGhostLairTime(ghost)!=0){
+			doesContainJunction = 1.0;
+		}
+		
+		return doesContainJunction;
+	}
+	
 }

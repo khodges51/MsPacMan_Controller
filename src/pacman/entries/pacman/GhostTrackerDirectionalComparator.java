@@ -7,7 +7,7 @@ import pacman.game.Constants.MOVE;
 /**
  * 
  * This comparator will sort GhostTrackers into ascending order based on their directional
- * distance to the GhostTracker's ghost. Direction must be provided in the constructor.
+ * distance from Ms.Pac-Man to the ghost. Direction must be provided in the constructor.
  * 
  * @author Kurt Hodges
  * 		   kuh1@aber.ac.uk

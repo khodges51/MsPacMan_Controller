@@ -1,5 +1,9 @@
 package pacman.entries.pacman;
 
+import static pacman.game.Constants.EDIBLE_TIME;
+import static pacman.game.Constants.EDIBLE_TIME_REDUCTION;
+import static pacman.game.Constants.LEVEL_RESET_REDUCTION;
+
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
@@ -55,7 +59,7 @@ public class MyPacMan extends Controller<MOVE>
 			//If the move is possible
 			if(game.isMovePossible(direction)){
 				//GET DIRECTIONAL INPUTS
-				networkInputs = getDirectionalInputs(networkInputs, 2, direction, game);
+				networkInputs = getDirectionalInputs(networkInputs, 6, direction, game);
 				//FEED THE NETWORK INPUTS AND STORE OUTPUT
 				networkOutput = runNetwork(networkInputs);
 			}else/*Else if the move isn't possible*/{
@@ -79,6 +83,8 @@ public class MyPacMan extends Controller<MOVE>
 	 *  Returns the neural network inputs that do'nt depend upon direction
 	 */
 	private double[] getConstantInputs(double[] networkInputs, int startIndex, Game game){
+		int pacManIndex=game.getPacmanCurrentNodeIndex();
+		
 		//GET POPORTION OF REMAINING PILLS
 		double amountPillsLeft = (double)game.getNumberOfActivePills() / (double)game.getNumberOfPills();
 		networkInputs[startIndex] = amountPillsLeft;
@@ -87,9 +93,53 @@ public class MyPacMan extends Controller<MOVE>
 		double amountPowerPillsLeft = (double)game.getNumberOfActivePowerPills() / (double)game.getNumberOfPowerPills();
 		networkInputs[startIndex + 1] = amountPowerPillsLeft;
 		
+		/*
+		 * SPRINT 3 MOCK CODE
+		 */
+		//Prop of edible ghosts
+		double amountOfEdibleGhosts;
+		double numberOfEdibleGhosts = 0;
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0)
+				numberOfEdibleGhosts++;
+		}
+		amountOfEdibleGhosts = numberOfEdibleGhosts / 4.0;
+		networkInputs[startIndex + 2] = amountOfEdibleGhosts;
+		
+		//Is any ghost edible?
+		if(numberOfEdibleGhosts > 0){
+			networkInputs[startIndex + 3] = 1.0;
+		}else{
+			networkInputs[startIndex + 3] = 0.0;
+		}
+		
+		//Prop of edible time
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
+		double currentEdibleTime = 0.0;
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0)
+				currentEdibleTime = game.getGhostEdibleTime(ghost);
+		}
+		double propEdibleTime = currentEdibleTime / maximumEdibleTime;
+		
+		networkInputs[startIndex + 4] = propEdibleTime;
+		
+		//Are we 10 steps away from a power pill?
+		double isXStepsAway = 0.0;
+		int closestPowerPillIndex = game.getClosestNodeIndexFromNodeIndex(pacManIndex, game.getActivePowerPillsIndices(), DM.PATH);
+		if(closestPowerPillIndex != -1){
+			if(game.getShortestPathDistance(pacManIndex, closestPowerPillIndex) <= 20){
+				isXStepsAway = 1.0;
+			}
+		}
+		networkInputs[startIndex + 5] = isXStepsAway;
+		/*
+		 * 
+		 */
+		
 		return networkInputs;
 	}
-	
+	 
 	/*
 	 *  Returns the neural network inputs for the given direction
 	 */
@@ -100,13 +150,13 @@ public class MyPacMan extends Controller<MOVE>
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
 		//Get distance to closest pill
-		networkInputs[startIndex + 8] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 100, game);
+		networkInputs[startIndex + 12] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 200, game);
 		
 		//Get distance to closest power pill
-		networkInputs[startIndex + 9] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 500, game);
+		networkInputs[startIndex + 13] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 200, game);
 		
 		//Get distance to closest junction
-		networkInputs[startIndex + 10] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 100, game);
+		networkInputs[startIndex + 14] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 200, game);
 		
 		return networkInputs;
 	}
@@ -124,11 +174,8 @@ public class MyPacMan extends Controller<MOVE>
 		for(int j = startIndex; j < startIndex + 4; j++){
 			GhostTracker ghostTracker = orderedGhosts.poll();
 			networkInputs[j] = ghostTracker.getDirectionalDistance(direction);
-			if(ghostTracker.getIsEdible()){
-				networkInputs[j+4] = 1.0;
-				}else{
-					networkInputs[j+4] = 0.0;
-				}			
+			networkInputs[j + 4] = ghostTracker.isEdible();
+			networkInputs[j + 8] = ghostTracker.doesPathContainJunction(direction);
 		}
 		
 		return networkInputs;

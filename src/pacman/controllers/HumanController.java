@@ -1,5 +1,9 @@
 package pacman.controllers;
 
+import static pacman.game.Constants.EDIBLE_TIME;
+import static pacman.game.Constants.EDIBLE_TIME_REDUCTION;
+import static pacman.game.Constants.LEVEL_RESET_REDUCTION;
+
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -41,13 +45,55 @@ public class HumanController extends Controller<MOVE>
 
     public MOVE getMove(Game game,long dueTime)
     {	
-    	MOVE testDirection = MOVE.DOWN;
+    	MOVE testDirection = MOVE.RIGHT;
+    	
+    	int pacManIndex=game.getPacmanCurrentNodeIndex();
     	
     	//double amountPowerPillsLeft = (double)game.getNumberOfActivePowerPills() / (double)game.getNumberOfPowerPills();
 		//System.out.println(amountPowerPillsLeft);
     	
     	//double amountPillsLeft = (double)game.getNumberOfActivePills() / (double)game.getNumberOfPills();
     	//System.out.println(amountPillsLeft);
+    	
+    	/*
+    	//Prop of edible ghosts
+		double amountOfEdibleGhosts;
+		double numberOfEdibleGhosts = 0;
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0)
+				numberOfEdibleGhosts++;
+		}
+		amountOfEdibleGhosts = numberOfEdibleGhosts / 4.0;
+		System.out.println(amountOfEdibleGhosts);
+			//Is any ghost edible?
+		if(numberOfEdibleGhosts > 0){
+			System.out.println(1.0);
+		}else{
+			System.out.println(0.0);
+		}
+		*/
+    	/*
+		//prop edible time
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
+		double currentEdibleTime = 0.0;
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0)
+				currentEdibleTime = game.getGhostEdibleTime(ghost);
+		}
+		double propEdibleTime = currentEdibleTime / maximumEdibleTime;
+		System.out.println(propEdibleTime);
+    	*/
+    	/*
+    	//Are we 10 steps away from a power pill?
+    	double isTenStepsAway = 0.0;
+    	int closestPowerPillIndex = game.getClosestNodeIndexFromNodeIndex(pacManIndex, game.getActivePowerPillsIndices(), DM.PATH);
+    	if(closestPowerPillIndex != -1){
+    		if(game.getShortestPathDistance(pacManIndex, closestPowerPillIndex) <= 20){
+    			isTenStepsAway = 1.0;
+    		}
+    	}
+    	System.out.println(isTenStepsAway);
+    	*/
     	
     	//Direction specific tests
     	if(game.isMovePossible(testDirection)){
@@ -56,6 +102,7 @@ public class HumanController extends Controller<MOVE>
     		//test_DirectionalDistanceToNearestPill(game, testDirection, Color.red);
     		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, Color.red);
     		//test_DirectionalDistanceToNearestJunction(game, testDirection, Color.red);
+    		test_DoesPathContainJunction(game, testDirection);
     	}
     	
     	Color[] colors = {Color.RED, Color.YELLOW, Color.CYAN, Color.GREEN};
@@ -65,7 +112,7 @@ public class HumanController extends Controller<MOVE>
     		if(game.isMovePossible(testDirection)){
             	//test_DirectionalDistanceToNearestPill(game, testDirection, colors[i]);
         		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, colors[i]);
-        		test_DirectionalDistanceToNearestJunction(game, testDirection, colors[i]);
+        		//test_DirectionalDistanceToNearestJunction(game, testDirection, colors[i]);
         	}
     	}
     	
@@ -110,6 +157,40 @@ public class HumanController extends Controller<MOVE>
 				System.out.print(" || DISTANCE: ");
 				System.out.println(ghostTracker.getDirectionalDistance_drawn(direction, colors[j]));	
 				
+			}
+			
+		}else/*Else if the move isn't possible*/{
+			System.out.println("NOT POSSIBLE MOVE");
+		}
+		System.out.println();
+    }
+    
+    /*
+     * Paints different coloured lines to each ghost in the given direction and outputs
+     * the distance to them via the console.
+     */
+    private void test_DoesPathContainJunction(Game game, MOVE direction){
+    	
+		System.out.print("DIRECTION: ");
+		System.out.println(direction);
+	
+    
+		Color[] colors = {Color.RED, Color.YELLOW, Color.CYAN, Color.GREEN};
+		
+    	//If the move is possible
+		if(game.isMovePossible(direction)){	
+			//GHOST DISTANCE 1st to 4th and are they edible??
+			PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
+			for(GHOST ghost : GHOST.values()){
+				GhostTracker ghostTracker = new GhostTracker(ghost, game);
+				orderedGhosts.add(ghostTracker);
+			}
+			for(int j = 0; j < 4; j++){
+				GhostTracker ghostTracker = orderedGhosts.poll();
+				System.out.print("GHOST: ");
+				System.out.print(ghostTracker.getGhost());	
+				System.out.print(" || DOES PATH HAVE JUNCTION?: ");
+				System.out.println(ghostTracker.doesPathContainJunction_Drawn(direction, colors[j]));
 			}
 			
 		}else/*Else if the move isn't possible*/{
