@@ -1,5 +1,9 @@
 package pacman.controllers;
 
+import static pacman.game.Constants.EDIBLE_TIME;
+import static pacman.game.Constants.EDIBLE_TIME_REDUCTION;
+import static pacman.game.Constants.LEVEL_RESET_REDUCTION;
+
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -41,13 +45,23 @@ public class HumanController extends Controller<MOVE>
 
     public MOVE getMove(Game game,long dueTime)
     {	
-    	MOVE testDirection = MOVE.DOWN;
+    	MOVE testDirection = MOVE.RIGHT;
+    	
+    	int pacManIndex=game.getPacmanCurrentNodeIndex();
+    	
+    	//Direction independent inputs
     	
     	//double amountPowerPillsLeft = (double)game.getNumberOfActivePowerPills() / (double)game.getNumberOfPowerPills();
 		//System.out.println(amountPowerPillsLeft);
     	
     	//double amountPillsLeft = (double)game.getNumberOfActivePills() / (double)game.getNumberOfPills();
     	//System.out.println(amountPillsLeft);
+    	
+    	//test_propEdibleGhosts(game);
+    	//test_propEdibleTime(game);
+    	//test_areTenStepsFromPowerPill(game);
+    	//test_areAnyGhostsEdible(game);
+    	//test_isTenStepsAway(game);
     	
     	//Direction specific tests
     	if(game.isMovePossible(testDirection)){
@@ -56,16 +70,17 @@ public class HumanController extends Controller<MOVE>
     		//test_DirectionalDistanceToNearestPill(game, testDirection, Color.red);
     		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, Color.red);
     		//test_DirectionalDistanceToNearestJunction(game, testDirection, Color.red);
+    		test_DoesPathContainJunction(game, testDirection);
     	}
     	
-    	Color[] colors = {Color.RED, Color.YELLOW, Color.CYAN, Color.GREEN};
     	//Tests for all 4 directions
+    	Color[] colors = {Color.RED, Color.YELLOW, Color.CYAN, Color.GREEN};
     	for(int i = 0; i < 4; i++){
     		testDirection = MOVE.getByIndex(i);
     		if(game.isMovePossible(testDirection)){
             	//test_DirectionalDistanceToNearestPill(game, testDirection, colors[i]);
         		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, colors[i]);
-        		test_DirectionalDistanceToNearestJunction(game, testDirection, colors[i]);
+        		//test_DirectionalDistanceToNearestJunction(game, testDirection, colors[i]);
         	}
     	}
     	
@@ -80,6 +95,75 @@ public class HumanController extends Controller<MOVE>
 	    	case KeyEvent.VK_LEFT: 	return MOVE.LEFT;
 	    	default: 				return MOVE.NEUTRAL;
     	}
+    }
+    
+    private void test_propEdibleGhosts(Game game){
+    	System.out.print("Prop of edible ghosts: ");
+		double numberOfEdibleGhosts = 0;
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
+		double currentEdibleTime = 0.0;
+		
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0){
+				numberOfEdibleGhosts++;
+				currentEdibleTime = game.getGhostEdibleTime(ghost);
+			}
+		}
+		double propOfEdibleGhosts = numberOfEdibleGhosts / 4.0;
+		System.out.println(propOfEdibleGhosts);
+    }
+    
+    private void test_propEdibleTime(Game game){
+    	System.out.print("Prop of edible time: ");
+    	double numberOfEdibleGhosts = 0;
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
+		double currentEdibleTime = 0.0;
+		
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0){
+				numberOfEdibleGhosts++;
+				currentEdibleTime = game.getGhostEdibleTime(ghost);
+			}
+		}
+		double propEdibleTime = currentEdibleTime / maximumEdibleTime;
+		System.out.println(propEdibleTime);
+    }
+    
+
+    private void test_isTenStepsAway(Game game){
+    	int pacManIndex=game.getPacmanCurrentNodeIndex();
+    	System.out.print("Are we 20 steps away from a power pill?: ");
+    	//Are we 10 steps away from a power pill?
+    	double isTenStepsAway = 0.0;
+    	int closestPowerPillIndex = game.getClosestNodeIndexFromNodeIndex(pacManIndex, game.getActivePowerPillsIndices(), DM.PATH);
+    	if(closestPowerPillIndex != -1){
+    		if(game.getShortestPathDistance(pacManIndex, closestPowerPillIndex) <= 20){
+    			isTenStepsAway = 1.0;
+    			GameView.addPoints(game,Color.red,game.getShortestPath(pacManIndex, closestPowerPillIndex));
+    		}
+    	}
+    	System.out.println(isTenStepsAway);
+    }
+    
+    private void test_areAnyGhostsEdible(Game game){
+    	System.out.print("Are any ghosts edible?: ");
+    	double numberOfEdibleGhosts = 0;
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
+		double currentEdibleTime = 0.0;
+		
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0){
+				numberOfEdibleGhosts++;
+				currentEdibleTime = game.getGhostEdibleTime(ghost);
+			}
+		}
+		
+		//Is any ghost edible?
+		if(numberOfEdibleGhosts > 0){
+			System.out.println(1.0);
+		}else{
+			System.out.println(0.0);
+		}
     }
     
     /*
@@ -119,6 +203,40 @@ public class HumanController extends Controller<MOVE>
     }
     
     /*
+     * Paints different coloured lines to each ghost in the given direction and outputs
+     * the distance to them via the console.
+     */
+    private void test_DoesPathContainJunction(Game game, MOVE direction){
+    	
+		System.out.print("DIRECTION: ");
+		System.out.println(direction);
+	
+    
+		Color[] colors = {Color.RED, Color.YELLOW, Color.CYAN, Color.GREEN};
+		
+    	//If the move is possible
+		if(game.isMovePossible(direction)){	
+			//GHOST DISTANCE 1st to 4th and are they edible??
+			PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
+			for(GHOST ghost : GHOST.values()){
+				GhostTracker ghostTracker = new GhostTracker(ghost, game);
+				orderedGhosts.add(ghostTracker);
+			}
+			for(int j = 0; j < 4; j++){
+				GhostTracker ghostTracker = orderedGhosts.poll();
+				System.out.print("GHOST: ");
+				System.out.print(ghostTracker.getGhost());	
+				System.out.print(" || DOES PATH HAVE JUNCTION?: ");
+				System.out.println(ghostTracker.doesPathContainJunction_Drawn(direction, colors[j]));
+			}
+			
+		}else/*Else if the move isn't possible*/{
+			System.out.println("NOT POSSIBLE MOVE");
+		}
+		System.out.println();
+    }
+    
+    /*
      * 
      */
     private void test_DirectionalDistanceToNearestJunction(Game game, MOVE direction, Color color){
@@ -129,18 +247,18 @@ public class HumanController extends Controller<MOVE>
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		int[] junctionIndicies = game.getJunctionIndices();
 	
-		double distance = 100;
-		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, junctionIndicies, direction, 100);
+		double distance = 200;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, junctionIndicies, direction, 200);
 		
 		if(closestNode != -1){
 			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
 		}
 		
-		if(distance < 100 && distance >= 0){
+		if(distance < 200 && distance >= 0){
 			System.out.println(distance);
 			GameView.addPoints(game,color,game.getShortestPath_absolute(pacManIndex, closestNode, direction));
 		}else{
-			System.out.println(100);
+			System.out.println(200);
 		}
     }
     
@@ -155,18 +273,18 @@ public class HumanController extends Controller<MOVE>
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		int[] pillsIndicies = game.getActivePillsIndices();
 	
-		double distance = 100;
-		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, 100);
+		double distance = 200;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, 200);
 		
 		if(closestNode != -1){
 			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
 		}
 		
-		if(distance < 100 && distance >= 0){
+		if(distance < 200 && distance >= 0){
 			System.out.println(distance);
 			GameView.addPoints(game,color,game.getShortestPath_absolute(pacManIndex, closestNode, direction));
 		}else{
-			System.out.println(100);
+			System.out.println(200);
 		}
     }
     
@@ -181,18 +299,18 @@ public class HumanController extends Controller<MOVE>
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		int[] pillsIndicies = game.getActivePowerPillsIndices();
 	
-		double distance = 500;
-		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, 500);
+		double distance = 200;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, pillsIndicies, direction, 200);
 		
 		if(closestNode != -1){
 			distance = game.getShortestPathDistance_absolute(pacManIndex, closestNode, direction);
 		}
 		
-		if(distance < 500 && distance >= 0){
+		if(distance < 200 && distance >= 0){
 			System.out.println(distance);
 			GameView.addPoints(game,color,game.getShortestPath_absolute(pacManIndex, closestNode, direction));
 		}else{
-			System.out.println(100);
+			System.out.println(200);
 		}
     }
 }

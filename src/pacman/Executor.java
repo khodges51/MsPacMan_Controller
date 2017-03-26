@@ -47,7 +47,7 @@ public class Executor
 {	
 	
 	//The number of input and output nodes the neural network should have
-	public static int netInputs = 13;
+	public static int netInputs = 21;
 	private static int netOutputs = 1;
 	
 	private double bestFitness = 0.0;
@@ -81,25 +81,21 @@ public class Executor
 		numGenerations = scanner.nextInt();
 		System.out.println("Please input the number of experiments to run per evaluation: ");
 		numExperiments = scanner.nextInt();
-		scanner.close();
+		
 		
 		Population networkPopulation = exec.initialisePopulation(popSize, netInputs, netOutputs);
 
 		exec.evolvePopulation(networkPopulation, numGenerations, numExperiments);
-
+		
 		//Run the best network to show final controller performance visually
+		System.out.println("Evolution over, press enter to see a simulation using the best scoring controller");
+		scanner.nextLine(); scanner.nextLine();
+		scanner.close();
 		if(exec.bestNetwork != null){
 			System.out.println("Running simulation with the best scoring network");
 			exec.runGameTimed(new MyPacMan(exec.bestNetwork),new StarterGhosts(), true);
 		}
 		
-		System.out.println("Running simulations of the final generation of networks");
-		//Run final simulation to show progress of population visually
-		Vector organisms = networkPopulation.getOrganisms();
-		for(int i = 0;i < organisms.size();i++){
-			Network brain = ((Organism)organisms.get(i)).getNet();
-			exec.runGameTimed(new MyPacMan(brain),new StarterGhosts(), true);
-		}
 	}
 	
 	/*
@@ -144,6 +140,9 @@ public class Executor
 				}
 				
 				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
+				System.out.print("Organism: ");
+				System.out.print(j);
+				System.out.print(" || Fitness: ");
 				System.out.println(((Organism)organisms.get(j)).getFitness());
 				
 				//Check if this is the best score so far
