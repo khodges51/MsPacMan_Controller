@@ -96,33 +96,27 @@ public class MyPacMan extends Controller<MOVE>
 		/*
 		 * SPRINT 3 MOCK CODE
 		 */
-		//Prop of edible ghosts
-		double amountOfEdibleGhosts;
 		double numberOfEdibleGhosts = 0;
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
+		double currentEdibleTime = 0.0;
+		
 		for(GHOST ghost : GHOST.values()){
-			if(game.getGhostEdibleTime(ghost) > 0)
+			if(game.getGhostEdibleTime(ghost) > 0){
 				numberOfEdibleGhosts++;
+				currentEdibleTime = game.getGhostEdibleTime(ghost);
+			}
 		}
-		amountOfEdibleGhosts = numberOfEdibleGhosts / 4.0;
-		networkInputs[startIndex + 2] = amountOfEdibleGhosts;
+		double propOfEdibleGhosts = numberOfEdibleGhosts / 4.0;
+		networkInputs[startIndex + 2] = propOfEdibleGhosts;
+		double propEdibleTime = currentEdibleTime / maximumEdibleTime;
+		networkInputs[startIndex + 3] = propEdibleTime;
 		
 		//Is any ghost edible?
 		if(numberOfEdibleGhosts > 0){
-			networkInputs[startIndex + 3] = 1.0;
+			networkInputs[startIndex + 4] = 1.0;
 		}else{
-			networkInputs[startIndex + 3] = 0.0;
+			networkInputs[startIndex + 4] = 0.0;
 		}
-		
-		//Prop of edible time
-		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
-		double currentEdibleTime = 0.0;
-		for(GHOST ghost : GHOST.values()){
-			if(game.getGhostEdibleTime(ghost) > 0)
-				currentEdibleTime = game.getGhostEdibleTime(ghost);
-		}
-		double propEdibleTime = currentEdibleTime / maximumEdibleTime;
-		
-		networkInputs[startIndex + 4] = propEdibleTime;
 		
 		//Are we 10 steps away from a power pill?
 		double isXStepsAway = 0.0;
@@ -162,10 +156,9 @@ public class MyPacMan extends Controller<MOVE>
 	}
 	
 	/*
-	 * 
+	 * Adds inputs concerning directional information about each ghost into the network. Ghosts are ordered from closest to farthest.
 	 */
 	private double[] getGhostInfo(double[] networkInputs, int startIndex, MOVE direction, Game game){
-		//GHOST DISTANCE 1st to 4th and are they edible??
 		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
 		for(GHOST ghost : GHOST.values()){
 			GhostTracker ghostTracker = new GhostTracker(ghost, game);

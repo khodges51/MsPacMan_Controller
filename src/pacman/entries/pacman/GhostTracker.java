@@ -20,7 +20,7 @@ import pacman.game.Constants.MOVE;
 public class GhostTracker{
 	
 	//Max directional distance to a ghost that should be considered
-	private static double maxDistance = 500;
+	private static double maxDistance = 200;
 	//The currently running simulation
 	private Game game;
 	//The ghost to track
@@ -62,15 +62,16 @@ public class GhostTracker{
 	}
 	
 	/**
-	 * 
+	 * Checks if the path from Ms. Pac-Man in the given direction to this ghost contains a junction or not.
 	 * @param direction
-	 * @return
+	 * @return	
+	 * 		1.0 if there is a junction, 0.0 if not
 	 */
 	public double doesPathContainJunction(MOVE direction){
 		double doesContainJunction = 0.0;
 		int[] shortestPath = new int[0];
 		
-		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
+		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			shortestPath = game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
 		}
 		
@@ -143,7 +144,7 @@ public class GhostTracker{
 		
 		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			shortestPath = game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
-			//GameView.addPoints(game,color,shortestPath);
+			GameView.addPoints(game,Color.GRAY,shortestPath);
 		}
 		
 		for(int i = 0; i < shortestPath.length; i++){
