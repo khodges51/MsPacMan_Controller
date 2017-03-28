@@ -47,7 +47,7 @@ public class Executor
 {	
 	
 	//The number of input and output nodes the neural network should have
-	public static int netInputs = 21;
+	public static int netInputs = 28;
 	private static int netOutputs = 1;
 	
 	private double bestFitness = 0.0;
@@ -135,7 +135,7 @@ public class Executor
 				int scoreTotal = 0;
 				//Loop for each experiment
 				for(int w = 0; w<numExperiments; w++){
-					double lastScore = this.runGameTimedSpeedOptimised(new MyPacMan(brain),new StarterGhosts(), false, false);
+					double lastScore = this.runGame(new MyPacMan(brain),new StarterGhosts(), false, 0);
 					scoreTotal += lastScore;
 				}
 				
@@ -183,7 +183,7 @@ public class Executor
 	 * @param visual Indicates whether or not to use visuals
 	 * @param delay The delay between time-steps
 	 */
-	public void runGame(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int delay)
+	public double runGame(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int delay)
 	{
 		Game game=new Game(0);
 
@@ -201,6 +201,10 @@ public class Executor
 	        if(visual)
 	        	gv.repaint();
 		}
+		
+		//Make note of the games score so that controller fitness can be evaluated
+ 		double lastScore = game.getScore();
+ 		return lastScore;
 	}
 	
 	/**
