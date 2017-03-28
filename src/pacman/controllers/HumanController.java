@@ -32,6 +32,8 @@ import jneat.*;
 public class HumanController extends Controller<MOVE>
 {
 	public KeyBoardInput input;
+	
+	public MOVE test_Direction;
     
     public HumanController(KeyBoardInput input)
     {
@@ -45,7 +47,7 @@ public class HumanController extends Controller<MOVE>
 
     public MOVE getMove(Game game,long dueTime)
     {	
-    	MOVE testDirection = MOVE.RIGHT;
+    	MOVE testDirection = MOVE.LEFT;
     	
     	int pacManIndex=game.getPacmanCurrentNodeIndex();
     	
@@ -70,7 +72,63 @@ public class HumanController extends Controller<MOVE>
     		//test_DirectionalDistanceToNearestPill(game, testDirection, Color.red);
     		//test_DirectionalDistanceToNearestPowerPill(game, testDirection, Color.red);
     		//test_DirectionalDistanceToNearestJunction(game, testDirection, Color.red);
-    		test_DoesPathContainJunction(game, testDirection);
+    		//test_DoesPathContainJunction(game, testDirection);
+    		//test_isGhostApproachingFromGivenDirection(game, testDirection, GHOST.PINKY);
+    		
+    		/*
+    		 * SPRINT 4 MOCK CODE
+    		 */
+    		/*
+    		System.out.print("DIRECTION: ");
+    		System.out.println(testDirection);
+    		
+    		//Is the nearest junction blocked?
+    		System.out.print("Is the junction in this direction blocked?: ");
+    		double maxDistance = 200;
+    		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, game.getJunctionIndices(), testDirection, maxDistance);
+    		int[] pathToJunction;
+    		double output;
+    		
+    		if(closestNode != -1){
+    			pathToJunction = game.getShortestPath_absolute(pacManIndex, closestNode, testDirection);
+    			GameView.addPoints(game,Color.red,pathToJunction);
+    			
+    			int pinkyIndex = game.getGhostCurrentNodeIndex(GHOST.PINKY);
+    			int blinkyIndex = game.getGhostCurrentNodeIndex(GHOST.BLINKY);
+    			int inkyIndex = game.getGhostCurrentNodeIndex(GHOST.INKY);
+    			int sueIndex = game.getGhostCurrentNodeIndex(GHOST.SUE);
+    			
+    			//Set input to 0.0? Need to default.....
+    			output = 0.0;
+    			
+    			for(int i = 0; i < pathToJunction.length; i++){
+    				if(pathToJunction[i] == pinkyIndex || pathToJunction[i] == sueIndex || pathToJunction[i] == blinkyIndex || pathToJunction[i] == inkyIndex){
+    					//Path is blocked
+    					output = 1.0;
+    				}
+    			}
+    			
+    			
+    		}else{
+    			//Set input to 0.0? No closest junction found...
+    			output = 0.0;
+    		}
+    		System.out.println(output);
+    		*/
+    		
+    		test_Direction = testDirection;
+    		//MAX PILLS IN 40 Steps
+    		//System.out.println("SEARCHING FOR PILLS");
+    		//test_maxXIn40Steps(testDirection, pacManIndex, game.getActivePillsIndices(), game);
+    		
+    		//MAX JUNCTIONS IN 40 Steps
+    		System.out.println("SEARCHING FOR JUNCTIONS");
+    		test_maxXIn40Steps(testDirection, pacManIndex, game.getJunctionIndices(), game);
+    		
+    		/*
+    		 * 
+    		 */
+    		
     	}
     	
     	//Tests for all 4 directions
@@ -96,6 +154,92 @@ public class HumanController extends Controller<MOVE>
 	    	default: 				return MOVE.NEUTRAL;
     	}
     }
+    
+	private double test_maxXIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, Game game){
+		System.out.print("DIRECTION: ");
+		System.out.println(direction);
+		System.out.print("Max found in 40 steps: ");
+		
+		double matchesSoFar = 0;
+		//Needs to track the max pills found over all branches spawned from this branch, including this branch
+		double maxMatchesSoFar = 0;
+		//Start search in neighbouring node
+		int currentIndex = game.getNeighbour(startIndex, direction);
+		
+		for(int stepsSoFar = 0; stepsSoFar < 40; stepsSoFar++){
+			//If current index is a match
+			for(int i = 0; i < targetNodeIndicies.length; i++){
+				if(targetNodeIndicies[i] == currentIndex){
+					matchesSoFar++;
+				}
+			}
+			
+			//Find next neighbour
+			int[] neighbours = game.getNeighbouringNodes(currentIndex, direction);
+			
+			//If we are at a junction
+			for(int i = 1; i < neighbours.length; i++){
+				int nodeIndex = neighbours[i];
+				//Start a new branch for this neighbour
+				double matchesInNewBranch = test_maxXIn40Steps(game.getMoveToMakeToReachDirectNeighbour(currentIndex, nodeIndex), nodeIndex, targetNodeIndicies, stepsSoFar + 1, matchesSoFar, game);
+				
+				if(matchesInNewBranch > maxMatchesSoFar)
+					maxMatchesSoFar = matchesInNewBranch;
+			}
+			
+			direction = game.getMoveToMakeToReachDirectNeighbour(currentIndex, neighbours[0]);
+			currentIndex = neighbours[0];
+			stepsSoFar++;
+		}
+		
+		if(matchesSoFar > maxMatchesSoFar)
+			maxMatchesSoFar = matchesSoFar;
+		
+		GameView.addPoints(game,Color.red,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(), currentIndex, test_Direction));
+		System.out.println(maxMatchesSoFar);
+		
+		return maxMatchesSoFar;
+	}
+	
+	private double test_maxXIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, int stepsPreviously, double matchesSoFar, Game game){
+		//Needs to track the max pills found over all branches spawned from this branch, including this branch
+		double maxMatchesSoFar = matchesSoFar;
+		int currentIndex = startIndex;
+		
+		//Find next neighbour
+		for(int stepsSoFar = stepsPreviously; stepsSoFar < 40; stepsSoFar++){
+			//If current index is a match
+			for(int i = 0; i < targetNodeIndicies.length; i++){
+				if(targetNodeIndicies[i] == currentIndex){
+					matchesSoFar++;
+				}
+			}
+			
+			//Find next neighbour
+			int[] neighbours = game.getNeighbouringNodes(currentIndex, direction);
+			
+			//If we are at a junction
+			for(int i = 1; i < neighbours.length; i++){
+				int nodeIndex = neighbours[i];
+				//Start a new branch for this neighbour
+				double matchesInNewBranch = test_maxXIn40Steps(game.getMoveToMakeToReachDirectNeighbour(currentIndex, nodeIndex), nodeIndex, targetNodeIndicies, stepsSoFar + 1, matchesSoFar, game);
+				
+				if(matchesInNewBranch > maxMatchesSoFar)
+					maxMatchesSoFar = matchesInNewBranch;
+			}
+			
+			direction = game.getMoveToMakeToReachDirectNeighbour(currentIndex, neighbours[0]);
+			currentIndex = neighbours[0];
+			stepsSoFar++;
+		}
+		
+		if(matchesSoFar > maxMatchesSoFar)
+			maxMatchesSoFar = matchesSoFar;
+		
+		GameView.addPoints(game,Color.red,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(), currentIndex, test_Direction));
+		
+		return maxMatchesSoFar;
+	}
     
     private void test_propEdibleGhosts(Game game){
     	System.out.print("Prop of edible ghosts: ");
@@ -311,6 +455,21 @@ public class HumanController extends Controller<MOVE>
 			GameView.addPoints(game,color,game.getShortestPath_absolute(pacManIndex, closestNode, direction));
 		}else{
 			System.out.println(200);
+		}
+    }
+    
+    private void test_isGhostApproachingFromGivenDirection(Game game, MOVE direction, GHOST ghost){
+    	System.out.print("DIRECTION: ");
+    	System.out.println(direction);
+    	System.out.print(ghost);
+    	
+    	int pacManIndex=game.getPacmanCurrentNodeIndex();
+    	
+    	MOVE incomingDirection = game.getNextMoveTowardsTarget(pacManIndex, game.getGhostCurrentNodeIndex(ghost), DM.PATH);
+		if(incomingDirection == direction){
+			System.out.println(" IS approaching from the direction");
+		}else{
+			System.out.println(" is NOT approaching from the direction");
 		}
     }
 }
