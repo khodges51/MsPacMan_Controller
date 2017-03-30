@@ -122,8 +122,8 @@ public class HumanController extends Controller<MOVE>
     		//test_maxXIn40Steps(testDirection, pacManIndex, game.getActivePillsIndices(), game);
     		
     		//MAX JUNCTIONS IN 40 Steps
-    		System.out.println("SEARCHING FOR JUNCTIONS");
-    		test_maxXIn40Steps(testDirection, pacManIndex, game.getJunctionIndices(), game);
+    		//System.out.println("SEARCHING FOR JUNCTIONS");
+    		//test_maxXIn40Steps(testDirection, pacManIndex, game.getJunctionIndices(), game);
     		
     		/*
     		 * 

@@ -375,7 +375,7 @@
 	  
 	  
 		 StringBuffer rep1 = new StringBuffer("");
-	  //   	System.out.print("\n  The BEST specie is #" + best_species_num);
+	     	System.out.print("\n  The BEST specie is #" + best_species_num);
 		 rep1.append("\n  the BEST  specie is #" + best_species_num);
 	  
 	  
@@ -386,22 +386,22 @@
 		 while (itr_specie.hasNext()) 
 		 {
 			_specie = ((Species) itr_specie.next());
-		 //	  	System.out.print("\n  orig fitness of Species #" + _specie.id);
+		 	  	System.out.print("\n  orig fitness of Species #" + _specie.id);
 			rep1.append("\n  orig fitness of Species #" + _specie.id);
 		 
-		 //	  	System.out.print(" (Size " + _specie.getOrganisms().size() + "): ");
+		   	System.out.print(" (Size " + _specie.getOrganisms().size() + "): ");
 			rep1.append(" (Size " + _specie.getOrganisms().size() + "): ");
 		 
-		 // 	  	System.out.print(" is " + ((Organism) (_specie.organisms.firstElement())).orig_fitness); 
+		 	  	System.out.print(" is " + ((Organism) (_specie.organisms.firstElement())).orig_fitness); 
 			rep1.append(" is " + ((Organism) (_specie.organisms.firstElement())).orig_fitness); 
 		 
-		 // 	  	System.out.print(" last improved ");
+		  	  	System.out.print(" last improved ");
 			rep1.append(" last improved ");
 		 
-		 //	  	System.out.print(_specie.age - _specie.age_of_last_improvement);
+		 	  	System.out.print(_specie.age - _specie.age_of_last_improvement);
 			rep1.append(_specie.age - _specie.age_of_last_improvement);
 		 
-		 //	  	System.out.print(" offspring "+_specie.expected_offspring);
+		   	System.out.print(" offspring "+_specie.expected_offspring);
 			rep1.append(" offspring "+_specie.expected_offspring);
 		 
 		 }
@@ -427,7 +427,7 @@
 		 {
 			highest_fitness = ((Organism) curspecies.organisms.firstElement()).orig_fitness; 
 			highest_last_changed = 0;
-		 //	  	System.out.print("\n    Good! Population has reached a new *RECORD FITNESS* -> " + highest_fitness);
+		 	  	System.out.print("\n    Good! Population has reached a new *RECORD FITNESS* -> " + highest_fitness);
 			rep1.append("\n    population has reached a new *RECORD FITNESS* -> " + highest_fitness);
 
 
@@ -447,7 +447,7 @@
 			++highest_last_changed;
 			EnvConstant.REPORT_SPECIES_TESTA = "";
 		 
-		 //	  	System.out.print("\n  Are passed "+ highest_last_changed+ " generations from last population fitness record: "+ highest_fitness); 
+		 	  	System.out.print("\n  Are passed "+ highest_last_changed+ " generations from last population fitness record: "+ highest_fitness); 
 			rep1.append("\n    are passed "+ highest_last_changed+ " generations from last population fitness record: "+ highest_fitness); 
 		 }
 	  
@@ -635,26 +635,26 @@
 	  
 	  
 	  // ---------- phase of reproduction -----------
-	  /*   	 System.out.print("\n ---- Reproduction at time " + generation+" ----");
+	  	 System.out.print("\n ---- Reproduction at time " + generation+" ----");
 	  System.out.print("\n    species   : "+ sorted_species.size());
 	  System.out.print("\n    organisms : "+ organisms.size());
 	  System.out.print("\n    cur innov num : "+cur_innov_num);
 	  System.out.print("\n    cur node num  : "+cur_node_id);
 	  System.out.print("\n ---------------------------------------------");
 	  System.out.print("\n Start reproduction of species ....");
-	  */   	
+	     	
 		 boolean rc = false;
 	  
 		 itr_specie = sorted_species.iterator();
-	  // System.out.print("\n verifica");
-	  //System.out.print("\n this species has "+sorted_species.size()+" elements");
+	   System.out.print("\n verifica");
+	   System.out.print("\n this species has "+sorted_species.size()+" elements");
 		 while (itr_specie.hasNext()) 
 		 {
 			_specie = ((Species) itr_specie.next());
 			rc = _specie.reproduce(generation, this, sorted_species);
 		 }
 	  
-	  //   	System.out.print("\n Reproduction completed");
+	 System.out.print("\n Reproduction completed");
 	  
 	  
 	  
@@ -751,7 +751,7 @@
 			}
 		 }
 	  
-	  // System.out.print("\n the number of species can be eliminated is "+vdel.size());
+	  System.out.print("\n the number of species can be eliminated is "+vdel.size());
 	  //eliminate species marked from master list
 		 for (int i = 0; i < vdel.size(); i++) 
 		 {
@@ -792,12 +792,12 @@
 	  
 	  
 	  
-	  /*   			
+	  		
 	  if (!best_ok)
 	  System.out.print("\n  <ALERT>  THE BEST SPECIES DIED!");
 	  else
 	  System.out.print("\n  Good : the best Specie #" + best_species_num+" survived ");
-	  */
+	 
 	  
 	  
 		 if (!best_ok)
@@ -816,12 +816,12 @@
 			Organism _organism = ((Organism) itr_organism.next());
 			if (_organism.pop_champ_child) 
 			{
-			//		 	System.out.print("\n At end of reproduction cycle, the child of the pop champ is: "); 
+					 	System.out.print("\n At end of reproduction cycle, the child of the pop champ is: "); 
 			   break;
 			}
 		 }
 	  
-	  //   	System.out.print("\n Epoch complete");
+	    	System.out.print("\n Epoch complete");
 	  
 	  }
    

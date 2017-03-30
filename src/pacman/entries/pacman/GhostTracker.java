@@ -67,8 +67,7 @@ public class GhostTracker{
 	 * @return	
 	 * 		1.0 if there is a junction, 0.0 if not
 	 */
-	public double doesPathContainJunction(MOVE direction){
-		double doesContainJunction = 0.0;
+	public boolean doesPathContainJunction(MOVE direction){
 		int[] shortestPath = new int[0];
 		
 		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
@@ -77,24 +76,25 @@ public class GhostTracker{
 		
 		for(int i = 0; i < shortestPath.length; i++){
 			if(game.isJunction(shortestPath[i]))
-					doesContainJunction = 1.0;
+					return true;
 		}
 		
+		//If the ghost is in the lair return true
 		if(game.getGhostLairTime(ghost)!=0){
-			doesContainJunction = 1.0;
+			return true;
 		}
 		
-		return doesContainJunction;
+		return false;
 	}
 	
 	/**
 	 * @return 1.0 if ghost is edible or 0.0 if ghost is not
 	 */
-	public double isEdible(){
+	public boolean isEdible(){
 		if(game.getGhostEdibleTime(ghost)==0){
-			return 0.0;
+			return false;
 		}else{
-			return 1.0;
+			return true;
 		}
 	}
 	
@@ -139,7 +139,7 @@ public class GhostTracker{
 	 * @return
 	 */
 	public double doesPathContainJunction_Drawn(MOVE direction, Color color){
-		double doesContainJunction = 0.0;
+		double doesContainJunction = -1.0;
 		int[] shortestPath = new int[0];
 		
 		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){

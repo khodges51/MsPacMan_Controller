@@ -1,5 +1,7 @@
 package pacman;
 
+import jGraph.Structure;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -8,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Vector;
 import java.util.Scanner;
@@ -106,10 +109,12 @@ public class Executor
 	private Population initialisePopulation(int size, int numInputs, int numOutputs){
 		Population population;
 		
-		Genome startGenome = new Genome(1, numInputs, numOutputs, 0, numInputs + numOutputs, true, 1.0); 
+		Genome startGenome = new Genome(1, numInputs, numOutputs, 0, numInputs + numOutputs, true, 0.8); 
 		population = new Population(startGenome, size);
 		
-		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 1.0);
+		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 0.8);
+		
+		population.verify();
 		return population;
 	}
 	
@@ -120,7 +125,7 @@ public class Executor
 	 * @author kuh1@aber.ac.uk 
 	 */
 	private void evolvePopulation(Population networkPopulation, int numGenerations, int numExperiments){
-		int generation = 1;
+		int generation = 0;
 		//Loop for each generation
 		for(int i = 0; i < numGenerations; i++){
 			
@@ -140,8 +145,19 @@ public class Executor
 				}
 				
 				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
-				System.out.print("Organism: ");
-				System.out.print(j);
+				((Organism)organisms.get(j)).setError(60000.0 - (scoreTotal/numExperiments));
+				
+				/*
+				 * DEBUG MOCK CODE (SPRINT 4) 
+				 * Need to visualise the networks, will explore JNEAT GUI classes
+				 */
+				((Organism)organisms.get(j)).viewtext();
+				/*
+				 * 
+				 */
+				
+				//System.out.print("Organism: ");
+				//System.out.print(j);
 				System.out.print(" || Fitness: ");
 				System.out.println(((Organism)organisms.get(j)).getFitness());
 				
@@ -152,9 +168,35 @@ public class Executor
 				}
 			}
 			
-			networkPopulation.epoch(generation);
+			/*
+			 * DEBUG MOCK CODE (SPRINT 4) 
+			 * Need to visualise the networks, will explore JNEAT GUI classes
+			 */
+			//String xNameFile = "gen" + i + ".txt";
+			//networkPopulation.print_to_filename(xNameFile);
+			
+			//ARE THEY MATING? GENOME ID, Does that change? If no, does that even mean anything?
+			
+			//WHAT DOES OFFSPRING = 0 IMPLY?
+			
+			//THE SPECIES "DIE" AND FORM NEW ONES BUT DO THE ORGANISMS?
+			
+			//compute average and max fitness for each species
+			Iterator itr_specie;
+			itr_specie = networkPopulation.species.iterator();
+			while (itr_specie.hasNext()) 
+			{
+			   Species _specie = ((Species) itr_specie.next());
+			   _specie.compute_average_fitness();
+			   _specie.compute_max_fitness();
+			}
+			
+			/*
+			 * 
+			 */
+			
+			networkPopulation.epoch(generation++);
 			consoleOut_lastGen(networkPopulation, generation);
-			generation++;
 		}
 	}
 	
