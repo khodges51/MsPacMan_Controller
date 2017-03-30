@@ -31,6 +31,7 @@ import jneat.*;
 public class MyPacMan extends Controller<MOVE>
 {
 	private Network network;
+	private DataNormalizer dataNormalizer;
 	
 	/**
 	 * Create a new controller for Ms. Pac-MAn
@@ -39,6 +40,7 @@ public class MyPacMan extends Controller<MOVE>
 	 */
 	public MyPacMan(Network network){
 		this.network = network;
+		dataNormalizer = new DataNormalizer();
 	}
 	
 	/**
@@ -77,8 +79,29 @@ public class MyPacMan extends Controller<MOVE>
 			 
 			//consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
 		}
+		//System.out.println();
 		
 		return MOVE.getByIndex(bestMoveIndex);
+	}
+	
+	/*
+	 *  Loads the neural network with the given inputs and returns the output
+	 */
+	private double runNetwork(double[] networkInputs){
+		network.load_sensors(networkInputs);
+		 
+		 int net_depth = network.max_depth();
+		 // first activate from sensor to next layer....
+		 network.activate();
+		 // next activate each layer until the last level is reached
+		 for (int relax = 0; relax <= net_depth; relax++)
+		 {
+			 network.activate();
+		 }
+		 
+		 double output = ((NNode) network.getOutputs().elementAt(0)).getActivation();
+		 network.flush();
+		 return output;
 	}
 	
 	/*
@@ -115,20 +138,20 @@ public class MyPacMan extends Controller<MOVE>
 		
 		//Is any ghost edible?
 		if(numberOfEdibleGhosts > 0){
-			networkInputs[startIndex + 4] = 1.0;
+			networkInputs[startIndex + 4] = dataNormalizer.normalizeBoolean(true);
 		}else{
-			networkInputs[startIndex + 4] = 0.0;
+			networkInputs[startIndex + 4] = dataNormalizer.normalizeBoolean(false);
 		}
 		
 		//Are we 10 steps away from a power pill?
-		double isXStepsAway = 0.0;
+		boolean isXStepsAway = false;
 		int closestPowerPillIndex = game.getClosestNodeIndexFromNodeIndex(pacManIndex, game.getActivePowerPillsIndices(), DM.PATH);
 		if(closestPowerPillIndex != -1){
 			if(game.getShortestPathDistance(pacManIndex, closestPowerPillIndex) <= 20){
-				isXStepsAway = 1.0;
+				isXStepsAway = true;
 			}
 		}
-		networkInputs[startIndex + 5] = isXStepsAway;
+		networkInputs[startIndex + 5] = dataNormalizer.normalizeBoolean(isXStepsAway);
 		/*
 		 * 
 		 */
@@ -154,13 +177,13 @@ public class MyPacMan extends Controller<MOVE>
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
 		//Get distance to closest pill
-		networkInputs[startIndex + 16] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 200, game);
+		networkInputs[startIndex + 16] = dataNormalizer.normalizeInput(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 200, game), 200);
 		
 		//Get distance to closest power pill
-		networkInputs[startIndex + 17] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 200, game);
+		networkInputs[startIndex + 17] = dataNormalizer.normalizeInput(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 200, game), 200);
 		
 		//Get distance to closest junction
-		networkInputs[startIndex + 18] = getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 200, game);
+		networkInputs[startIndex + 18] = dataNormalizer.normalizeInput(getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 200, game), 200);
 		
 		/*
 		 * SPRINT 4 MOCK CODE
@@ -178,27 +201,27 @@ public class MyPacMan extends Controller<MOVE>
 			int inkyIndex = game.getGhostCurrentNodeIndex(GHOST.INKY);
 			int sueIndex = game.getGhostCurrentNodeIndex(GHOST.SUE);
 			
-			//Set input to 0.0? Need to default.....
-			networkInputs[startIndex + 19] = 0.0;
+			//Set input to default.....
+			boolean isBlocked = false;
 			
 			for(int i = 0; i < pathToJunction.length; i++){
 				if(pathToJunction[i] == pinkyIndex || pathToJunction[i] == sueIndex || pathToJunction[i] == blinkyIndex || pathToJunction[i] == inkyIndex){
 					//Path is blocked
-					networkInputs[startIndex + 19] = 1.0;
+					isBlocked = true;
 				}
 			}
 			
-			
+			networkInputs[startIndex + 19] = dataNormalizer.normalizeBoolean(isBlocked);
 		}else{
-			//Set input to 0.0? No closest junction found...
-			networkInputs[startIndex + 19] = 0.0;
+			//Set input to false? No closest junction found...
+			networkInputs[startIndex + 19] = dataNormalizer.normalizeBoolean(false);
 		}
 		
 		//MAX PILLS IN 30 STEPS
-		networkInputs[startIndex + 20] = maxXIn40Steps(direction, pacManIndex, game.getActivePillsIndices(), game);
+		networkInputs[startIndex + 20] = dataNormalizer.normalizeInput(maxXIn40Steps(direction, pacManIndex, game.getActivePillsIndices(), game), 10);
 		
 		//MAX JUNCTIONS IN 30 STEPS
-		networkInputs[startIndex + 21] = maxXIn40Steps(direction, pacManIndex, game.getJunctionIndices(), game);
+		networkInputs[startIndex + 21] = dataNormalizer.normalizeInput(maxXIn40Steps(direction, pacManIndex, game.getJunctionIndices(), game), 10);
 		
 		/*
 		 * 
@@ -220,9 +243,9 @@ public class MyPacMan extends Controller<MOVE>
 		}
 		for(int j = startIndex; j < startIndex + 4; j++){
 			GhostTracker ghostTracker = orderedGhosts.poll();
-			networkInputs[j] = ghostTracker.getDirectionalDistance(direction);
-			networkInputs[j + 4] = ghostTracker.isEdible();
-			networkInputs[j + 8] = ghostTracker.doesPathContainJunction(direction);
+			networkInputs[j] = dataNormalizer.normalizeInput(ghostTracker.getDirectionalDistance(direction), 200);
+			networkInputs[j + 4] = dataNormalizer.normalizeBoolean(ghostTracker.isEdible());
+			networkInputs[j + 8] = dataNormalizer.normalizeBoolean(ghostTracker.doesPathContainJunction(direction));
 			
 			/*
 			 * SPRINT 4 MOCK CODE
@@ -235,9 +258,9 @@ public class MyPacMan extends Controller<MOVE>
 			//of approach.
 			MOVE incomingDirection = game.getNextMoveTowardsTarget(pacManIndex, game.getGhostCurrentNodeIndex(ghostTracker.getGhost()), DM.PATH);
 			if(incomingDirection == direction){
-				networkInputs[j + 12] = 1.0;
+				networkInputs[j + 12] = dataNormalizer.normalizeBoolean(true);
 			}else{
-				networkInputs[j + 12] = 0.0;
+				networkInputs[j + 12] = dataNormalizer.normalizeBoolean(false);
 			}
 			/*
 			 * 
@@ -342,25 +365,6 @@ public class MyPacMan extends Controller<MOVE>
 		}else{
 			return maxDistance;
 		}
-	}
-	
-	/*
-	 *  Loads the neural network with the given inputs and returns the output
-	 */
-	private double runNetwork(double[] networkInputs){
-		network.load_sensors(networkInputs);
-		 
-		 int net_depth = network.max_depth();
-		 // first activate from sensor to next layer....
-		 network.activate();
-		 // next activate each layer until the last level is reached
-		 for (int relax = 0; relax <= net_depth; relax++)
-		 {
-			 network.activate();
-		 }
-		 
-		 double output = ((NNode) network.getOutputs().elementAt(0)).getActivation();
-		 return output;
 	}
 	
 	/*
