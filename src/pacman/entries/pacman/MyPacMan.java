@@ -4,8 +4,6 @@ import static pacman.game.Constants.EDIBLE_TIME;
 import static pacman.game.Constants.EDIBLE_TIME_REDUCTION;
 import static pacman.game.Constants.LEVEL_RESET_REDUCTION;
 
-import java.awt.Color;
-import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import pacman.Executor;
@@ -14,7 +12,6 @@ import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
-import pacman.game.GameView;
 import jneat.*;
 
 /**
@@ -49,29 +46,33 @@ public class MyPacMan extends Controller<MOVE>
 	 */
 	public MOVE getMove(Game game, long timeDue) 
 	{			
+		double[] networkInputs = new double[Executor.netInputs];
+		
 		int bestMoveIndex = 0;
 		double largestOutput = -1.0;
-		//FOR EACH DIRECTION
+		
+		//Get non directional inputs
+		networkInputs = getConstantInputs(networkInputs, 0, game);
+		
+		//For each direction
 		for(int i = 0; i < 4; i++){
-			double[] networkInputs = new double[Executor.netInputs];
 			double networkOutput;
 			MOVE direction = MOVE.getByIndex(i);
 			
-			//GET NON-DIRECTIONAL INPUTS
-			networkInputs = getConstantInputs(networkInputs, 0, game);
-			
 			//If the move is possible
 			if(game.isMovePossible(direction)){
-				//GET DIRECTIONAL INPUTS
+				
+				//Get direction dependent inputs
 				networkInputs = getDirectionalInputs(networkInputs, 6, direction, game);
-				//FEED THE NETWORK INPUTS AND STORE OUTPUT
+				//Feed the network all of the inputs and capture the output
 				networkOutput = runNetwork(networkInputs);
+				
 			}else/*Else if the move isn't possible*/{
 				//Set the output to be the lowest possible value
 				networkOutput = -1.0;
 			}
 			
-			 //COMPARE OUTPUT WITH OTHER DIRECTIONS
+			 //Compare the output with output for each other direction
 			 if(networkOutput > largestOutput){
 				 bestMoveIndex = i;
 				 largestOutput = networkOutput;
@@ -110,60 +111,20 @@ public class MyPacMan extends Controller<MOVE>
 	private double[] getConstantInputs(double[] networkInputs, int startIndex, Game game){
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
-		//GET POPORTION OF REMAINING PILLS
+		//Get the ghost related inputs
+		networkInputs = getConstantGhostInfo(networkInputs, startIndex, game);
+		
+		//Get proportion of remaining pills
 		double amountPillsLeft = (double)game.getNumberOfActivePills() / (double)game.getNumberOfPills();
-		networkInputs[startIndex] = amountPillsLeft;
+		networkInputs[startIndex + 3] = amountPillsLeft;
 		
-		//GET POPORTION OF REMAINING Power PILLS
+		//Get proportion of remaining power pills
 		double amountPowerPillsLeft = (double)game.getNumberOfActivePowerPills() / (double)game.getNumberOfPowerPills();
-		networkInputs[startIndex + 1] = amountPowerPillsLeft;
-		
-		/*
-		 * SPRINT 3 MOCK CODE
-		 */
-		double numberOfEdibleGhosts = 0;
-		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
-		double currentEdibleTime = 0.0;
-		
-		for(GHOST ghost : GHOST.values()){
-			if(game.getGhostEdibleTime(ghost) > 0){
-				numberOfEdibleGhosts++;
-				currentEdibleTime = game.getGhostEdibleTime(ghost);
-			}
-		}
-		double propOfEdibleGhosts = numberOfEdibleGhosts / 4.0;
-		networkInputs[startIndex + 2] = propOfEdibleGhosts;
-		double propEdibleTime = currentEdibleTime / maximumEdibleTime;
-		networkInputs[startIndex + 3] = propEdibleTime;
-		
-		//Is any ghost edible?
-		if(numberOfEdibleGhosts > 0){
-			networkInputs[startIndex + 4] = dataNormalizer.normalizeBoolean(true);
-		}else{
-			networkInputs[startIndex + 4] = dataNormalizer.normalizeBoolean(false);
-		}
-		
-		//Are we 10 steps away from a power pill?
-		boolean isXStepsAway = false;
-		int closestPowerPillIndex = game.getClosestNodeIndexFromNodeIndex(pacManIndex, game.getActivePowerPillsIndices(), DM.PATH);
-		if(closestPowerPillIndex != -1){
-			if(game.getShortestPathDistance(pacManIndex, closestPowerPillIndex) <= 20){
-				isXStepsAway = true;
-			}
-		}
-		networkInputs[startIndex + 5] = dataNormalizer.normalizeBoolean(isXStepsAway);
-		/*
-		 * 
-		 */
-		
-		/*
-		 * SPRINT 4 MOCK CODE
-		 */
-		
-		/*
-		 * 
-		 */
-		
+		networkInputs[startIndex + 4] = amountPowerPillsLeft;
+
+		//Are we 20 steps away from a power pill?
+		networkInputs[startIndex + 5] = dataNormalizer.normalizeBoolean(isXStepsAway(pacManIndex, game.getActivePowerPillsIndices(), 20, game));
+
 		return networkInputs;
 	}
 	 
@@ -171,24 +132,24 @@ public class MyPacMan extends Controller<MOVE>
 	 *  Returns the neural network inputs for the given direction
 	 */
 	private double[] getDirectionalInputs(double[] networkInputs, int startIndex, MOVE direction, Game game){
-		
-		networkInputs = getGhostInfo(networkInputs, startIndex, direction, game);
-		
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
+		//Get the ghost related inputs
+		networkInputs = getDirectionalGhostInfo(networkInputs, startIndex, direction, game);
+		
 		//Get distance to closest pill
-		networkInputs[startIndex + 16] = dataNormalizer.normalizeInput(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 200, game), 200);
+		networkInputs[startIndex + 16] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 200, game), 200);
 		
 		//Get distance to closest power pill
-		networkInputs[startIndex + 17] = dataNormalizer.normalizeInput(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 200, game), 200);
+		networkInputs[startIndex + 17] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 200, game), 200);
 		
 		//Get distance to closest junction
-		networkInputs[startIndex + 18] = dataNormalizer.normalizeInput(getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 200, game), 200);
+		networkInputs[startIndex + 18] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 200, game), 200);
 		
 		/*
-		 * SPRINT 4 MOCK CODE
+		 * Is the nearest junction blocked?
+		 * Code is working but hideous and probably inefficient
 		 */
-		//Is the nearest junction blocked?
 		double maxDistance = 200;
 		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, game.getJunctionIndices(), direction, maxDistance);
 		int[] pathToJunction;
@@ -216,16 +177,50 @@ public class MyPacMan extends Controller<MOVE>
 			//Set input to false? No closest junction found...
 			networkInputs[startIndex + 19] = dataNormalizer.normalizeBoolean(false);
 		}
-		
-		//MAX PILLS IN 30 STEPS
-		networkInputs[startIndex + 20] = dataNormalizer.normalizeInput(maxXIn40Steps(direction, pacManIndex, game.getActivePillsIndices(), game), 10);
-		
-		//MAX JUNCTIONS IN 30 STEPS
-		networkInputs[startIndex + 21] = dataNormalizer.normalizeInput(maxXIn40Steps(direction, pacManIndex, game.getJunctionIndices(), game), 10);
-		
 		/*
 		 * 
 		 */
+		
+		//Max pills in 40 steps
+		networkInputs[startIndex + 20] = dataNormalizer.normalizeDouble(maxIn40Steps(
+				direction, game.getNeighbour(pacManIndex, direction), game.getActivePillsIndices(), 0, 0, game), 5);
+		
+		//Max junctions in 40 steps
+		networkInputs[startIndex + 21] = dataNormalizer.normalizeDouble(maxIn40Steps(
+				direction, game.getNeighbour(pacManIndex, direction), game.getJunctionIndices(), 0, 0, game), 4);
+		
+		return networkInputs;
+	}
+	
+	/*
+	 * Adds inputs concerning information about all of the ghost into the network
+	 */
+	private double[] getConstantGhostInfo(double[] networkInputs, int startIndex, Game game){
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
+		double currentEdibleTime = 0.0;
+		double numberOfEdibleGhosts = 0;
+		
+		for(GHOST ghost : GHOST.values()){
+			if(game.getGhostEdibleTime(ghost) > 0){
+				numberOfEdibleGhosts++;
+				currentEdibleTime = game.getGhostEdibleTime(ghost);
+			}
+		}
+		
+		//Get the proportion of ghosts that are edible
+		double propOfEdibleGhosts = numberOfEdibleGhosts / 4.0;
+		networkInputs[startIndex] = propOfEdibleGhosts;
+		
+		//Get the proportion of time remaining of ghosts being edible
+		double propEdibleTime = currentEdibleTime / maximumEdibleTime;
+		networkInputs[startIndex + 1] = propEdibleTime;
+		
+		//Is any ghost edible?
+		if(numberOfEdibleGhosts > 0){
+			networkInputs[startIndex + 2] = dataNormalizer.normalizeBoolean(true);
+		}else{
+			networkInputs[startIndex + 2] = dataNormalizer.normalizeBoolean(false);
+		}
 		
 		return networkInputs;
 	}
@@ -233,7 +228,7 @@ public class MyPacMan extends Controller<MOVE>
 	/*
 	 * Adds inputs concerning directional information about each ghost into the network. Ghosts are ordered from closest to farthest.
 	 */
-	private double[] getGhostInfo(double[] networkInputs, int startIndex, MOVE direction, Game game){
+	private double[] getDirectionalGhostInfo(double[] networkInputs, int startIndex, MOVE direction, Game game){
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
 		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
@@ -243,80 +238,45 @@ public class MyPacMan extends Controller<MOVE>
 		}
 		for(int j = startIndex; j < startIndex + 4; j++){
 			GhostTracker ghostTracker = orderedGhosts.poll();
-			networkInputs[j] = dataNormalizer.normalizeInput(ghostTracker.getDirectionalDistance(direction), 200);
+			networkInputs[j] = dataNormalizer.normalizeDouble(ghostTracker.getDirectionalDistance(direction), 200);
 			networkInputs[j + 4] = dataNormalizer.normalizeBoolean(ghostTracker.isEdible());
 			networkInputs[j + 8] = dataNormalizer.normalizeBoolean(ghostTracker.doesPathContainJunction(direction));
-			
-			/*
-			 * SPRINT 4 MOCK CODE
-			 */
-			//Is the ghost approaching from this direction?
-			//This is a simplified interpretation of the story. I could possibly take into account ghosts last direction of travel/non-reversal
-			//rule to come up with a more comprehensive implementation. 
-			
-			//Find the direction you would travel from Ms.Pac-Man to the ghost. This is probably the optimal path and so the direction
-			//of approach.
-			MOVE incomingDirection = game.getNextMoveTowardsTarget(pacManIndex, game.getGhostCurrentNodeIndex(ghostTracker.getGhost()), DM.PATH);
-			if(incomingDirection == direction){
-				networkInputs[j + 12] = dataNormalizer.normalizeBoolean(true);
-			}else{
-				networkInputs[j + 12] = dataNormalizer.normalizeBoolean(false);
-			}
-			/*
-			 * 
-			 */
+			networkInputs[j + 12] = dataNormalizer.normalizeBoolean(ghostTracker.isGhostApproaching(direction, pacManIndex));
 		}
 		
 		return networkInputs;
 	}
 	
-	private double maxXIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, Game game){
-		double matchesSoFar = 0;
-		//Needs to track the max pills found over all branches spawned from this branch, including this branch
-		double maxMatchesSoFar = 0;
-		//Start search in neighbouring node
-		int currentIndex = game.getNeighbour(startIndex, direction);
+	/*
+	 * Are you within X steps of one of the target nodes? Searches from the position 'currentIndex'
+	 */
+	private boolean isXStepsAway(int currentIndex, int[] targetIndicies, int numSteps, Game game){
+		boolean isXStepsAway = false;
 		
-		for(int stepsSoFar = 0; stepsSoFar < 40; stepsSoFar++){
-			//If current index is a match
-			for(int i = 0; i < targetNodeIndicies.length; i++){
-				if(targetNodeIndicies[i] == currentIndex){
-					matchesSoFar++;
-				}
+		int closestIndex = game.getClosestNodeIndexFromNodeIndex(currentIndex, targetIndicies, DM.PATH);
+		
+		if( closestIndex != -1){
+			if(game.getShortestPathDistance(currentIndex, closestIndex) <= numSteps){
+				isXStepsAway = true;
 			}
-			
-			//Find next neighbour
-			int[] neighbours = game.getNeighbouringNodes(currentIndex, direction);
-			
-			//If we are at a junction
-			for(int i = 1; i < neighbours.length; i++){
-				int nodeIndex = neighbours[i];
-				//Start a new branch for this neighbour
-				double matchesInNewBranch = maxXIn40Steps(game.getMoveToMakeToReachDirectNeighbour(currentIndex, nodeIndex), nodeIndex, targetNodeIndicies, stepsSoFar + 1, matchesSoFar, game);
-				
-				if(matchesInNewBranch > maxMatchesSoFar)
-					maxMatchesSoFar = matchesInNewBranch;
-			}
-			
-			direction = game.getMoveToMakeToReachDirectNeighbour(currentIndex, neighbours[0]);
-			currentIndex = neighbours[0];
-			stepsSoFar++;
 		}
 		
-		if(matchesSoFar > maxMatchesSoFar)
-			maxMatchesSoFar = matchesSoFar;
-		
-		return maxMatchesSoFar;
+		return isXStepsAway;
 	}
 	
-	private double maxXIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, int stepsPreviously, double matchesSoFar, Game game){
-		//Needs to track the max pills found over all branches spawned from this branch, including this branch
-		double maxMatchesSoFar = matchesSoFar;
+	/*
+	 * Searches in the given direction for 40 steps, checking each possible path, to find matches in the 'targetNodeIndicies' array and return
+	 * the maximum amount that can be found in 40 steps. E.g maximum number of pills in 40 steps
+	 */
+	private double maxIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, int stepsPreviously, double matchesSoFar, Game game){
 		int currentIndex = startIndex;
+		//Need to track the max/best pills found in this branch and over all branches spawned from this branch
+		double maxMatchesSoFar = matchesSoFar;
 		
 		//Find next neighbour
 		for(int stepsSoFar = stepsPreviously; stepsSoFar < 40; stepsSoFar++){
 			//If current index is a match
+			//MORE EFFICIENT WAY OF DOING THIS?
 			for(int i = 0; i < targetNodeIndicies.length; i++){
 				if(targetNodeIndicies[i] == currentIndex){
 					matchesSoFar++;
@@ -330,7 +290,7 @@ public class MyPacMan extends Controller<MOVE>
 			for(int i = 1; i < neighbours.length; i++){
 				int nodeIndex = neighbours[i];
 				//Start a new branch for this neighbour
-				double matchesInNewBranch = maxXIn40Steps(game.getMoveToMakeToReachDirectNeighbour(currentIndex, nodeIndex), nodeIndex, targetNodeIndicies, stepsSoFar + 1, matchesSoFar, game);
+				double matchesInNewBranch = maxIn40Steps(game.getMoveToMakeToReachDirectNeighbour(currentIndex, nodeIndex), nodeIndex, targetNodeIndicies, stepsSoFar + 1, matchesSoFar, game);
 				
 				if(matchesInNewBranch > maxMatchesSoFar)
 					maxMatchesSoFar = matchesInNewBranch;

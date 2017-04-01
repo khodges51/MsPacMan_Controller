@@ -118,12 +118,8 @@ public class HumanController extends Controller<MOVE>
     		
     		test_Direction = testDirection;
     		//MAX PILLS IN 40 Steps
-    		//System.out.println("SEARCHING FOR PILLS");
-    		//test_maxXIn40Steps(testDirection, pacManIndex, game.getActivePillsIndices(), game);
-    		
-    		//MAX JUNCTIONS IN 40 Steps
-    		//System.out.println("SEARCHING FOR JUNCTIONS");
-    		//test_maxXIn40Steps(testDirection, pacManIndex, game.getJunctionIndices(), game);
+    		System.out.println("SEARCHING FOR PILLS");
+    		System.out.println(test_maxXIn40Steps(testDirection, game.getNeighbour(pacManIndex, testDirection), game.getActivePillsIndices(), 0, 0, game));
     		
     		/*
     		 * 
@@ -155,6 +151,7 @@ public class HumanController extends Controller<MOVE>
     	}
     }
     
+    /*
 	private double test_maxXIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, Game game){
 		System.out.print("DIRECTION: ");
 		System.out.println(direction);
@@ -205,6 +202,47 @@ public class HumanController extends Controller<MOVE>
 		//Needs to track the max pills found over all branches spawned from this branch, including this branch
 		double maxMatchesSoFar = matchesSoFar;
 		int currentIndex = startIndex;
+		
+		//Find next neighbour
+		for(int stepsSoFar = stepsPreviously; stepsSoFar < 40; stepsSoFar++){
+			//If current index is a match
+			for(int i = 0; i < targetNodeIndicies.length; i++){
+				if(targetNodeIndicies[i] == currentIndex){
+					matchesSoFar++;
+				}
+			}
+			
+			//Find next neighbour
+			int[] neighbours = game.getNeighbouringNodes(currentIndex, direction);
+			
+			//If we are at a junction
+			for(int i = 1; i < neighbours.length; i++){
+				int nodeIndex = neighbours[i];
+				//Start a new branch for this neighbour
+				double matchesInNewBranch = test_maxXIn40Steps(game.getMoveToMakeToReachDirectNeighbour(currentIndex, nodeIndex), nodeIndex, targetNodeIndicies, stepsSoFar + 1, matchesSoFar, game);
+				
+				if(matchesInNewBranch > maxMatchesSoFar)
+					maxMatchesSoFar = matchesInNewBranch;
+			}
+			
+			direction = game.getMoveToMakeToReachDirectNeighbour(currentIndex, neighbours[0]);
+			currentIndex = neighbours[0];
+			stepsSoFar++;
+		}
+		
+		if(matchesSoFar > maxMatchesSoFar)
+			maxMatchesSoFar = matchesSoFar;
+		
+		GameView.addPoints(game,Color.red,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(), currentIndex, test_Direction));
+		
+		return maxMatchesSoFar;
+	}
+    */
+    
+    private double test_maxXIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, int stepsPreviously, double matchesSoFar, Game game){
+		int currentIndex = startIndex;
+		//Need to track the max/best pills found in this branch and over all branches spawned from this branch
+		double maxMatchesSoFar = matchesSoFar;
 		
 		//Find next neighbour
 		for(int stepsSoFar = stepsPreviously; stepsSoFar < 40; stepsSoFar++){
