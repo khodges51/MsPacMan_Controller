@@ -1,6 +1,7 @@
 package pacman;
 
 import jGraph.Structure;
+import jNeatCommon.IOseq;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -56,6 +57,9 @@ public class Executor
 	private double bestFitness = 0.0;
 	private Network bestNetwork;
 	
+	private double bestFitnessThisGen = 0.0;
+	private Network bestNetworkThisGen;
+	
 	/**
 	 * The main method. Asks the user some details about the experiments they want to run and 
 	 * initialises the experiments. 
@@ -68,7 +72,33 @@ public class Executor
 		Executor exec=new Executor();
 		Scanner scanner = new Scanner(System.in);
 		
-		//For testing, comment out when not needed
+		/*
+		//Test feature, load the overall champ
+		IOseq newFile = new IOseq("savedGenomes\\OverallChamp");
+		newFile.IOseqOpenR();
+		Genome champGenome = new Genome(1, newFile);
+		newFile.IOseqCloseR();
+		Organism champOrganism = new Organism(1, champGenome, 1);
+		System.out.println("Running overall champ in a simulation");
+		exec.runGameTimed(new MyPacMan(champOrganism.getNet()),new StarterGhosts(), true);
+		
+		//Test feature, load the gen champs
+		int numGens = 2;
+		for(int i = 0; i <= numGens; i++){
+			String fileName = "savedGenomes\\GenChamp" + i;
+			newFile = new IOseq(fileName);
+			newFile.IOseqOpenR();
+			champGenome = new Genome(1, newFile);
+			newFile.IOseqCloseR();
+			champOrganism = new Organism(1, champGenome, 1);
+			System.out.print("Running gen ");
+			System.out.print(i);
+			System.out.println(" champ in a simulation");
+			exec.runGameTimed(new MyPacMan(champOrganism.getNet()),new StarterGhosts(), true);
+		}
+		*/
+		
+		//For testing, comment out when not needed. Runs a simulation with the modified human controlled class.
 		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
 		
 		//Ask the user how big the population should be
@@ -85,10 +115,9 @@ public class Executor
 		System.out.println("Please input the number of experiments to run per evaluation: ");
 		numExperiments = scanner.nextInt();
 		
-		
 		Population networkPopulation = exec.initialisePopulation(popSize, netInputs, netOutputs);
 
-		exec.evolvePopulation(networkPopulation, numGenerations, numExperiments);
+		exec.runExperiment(networkPopulation, numGenerations, numExperiments);
 		
 		//Run the best network to show final controller performance visually
 		System.out.println("Evolution over, press enter to see a simulation using the best scoring controller");
@@ -98,7 +127,6 @@ public class Executor
 			System.out.println("Running simulation with the best scoring network");
 			exec.runGameTimed(new MyPacMan(exec.bestNetwork),new StarterGhosts(), true);
 		}
-		
 	}
 	
 	/*
@@ -112,6 +140,7 @@ public class Executor
 		Genome startGenome = new Genome(1, numInputs, numOutputs, 0, numInputs + numOutputs, true, 0.8); 
 		population = new Population(startGenome, size);
 		
+		//OR use an alternate method to generate the population. This can cause the first generation to have more than the minimal amount of nodes
 		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 0.8);
 		
 		population.verify();
@@ -124,80 +153,81 @@ public class Executor
 	 * the non deterministic nature of the game leading to varying performance of the controller.
 	 * @author kuh1@aber.ac.uk 
 	 */
-	private void evolvePopulation(Population networkPopulation, int numGenerations, int numExperiments){
+	private void runExperiment(Population networkPopulation, int numGenerations, int numExperiments){
 		int generation = 0;
 		//Loop for each generation
 		for(int i = 0; i < numGenerations; i++){
 			
+			bestFitnessThisGen = 0;
 			Vector organisms = networkPopulation.getOrganisms();
 			
 			//Loop for each organism in the population
 			for(int j = 0;j < organisms.size();j++){
-				
-				//Extract the neural network from the population, ready for evaluation
-				Network brain = ((Organism)organisms.get(j)).getNet();
-				
-				int scoreTotal = 0;
-				//Loop for each experiment
-				for(int w = 0; w<numExperiments; w++){
-					double lastScore = this.runGame(new MyPacMan(brain),new StarterGhosts(), false, 0);
-					scoreTotal += lastScore;
-				}
-				
-				((Organism)organisms.get(j)).setFitness(scoreTotal/numExperiments);
-				((Organism)organisms.get(j)).setError(60000.0 - (scoreTotal/numExperiments));
-				
-				/*
-				 * DEBUG MOCK CODE (SPRINT 4) 
-				 * Need to visualise the networks, will explore JNEAT GUI classes
-				 */
-				((Organism)organisms.get(j)).viewtext();
-				/*
-				 * 
-				 */
-				
-				//System.out.print("Organism: ");
-				//System.out.print(j);
-				System.out.print(" || Fitness: ");
-				System.out.println(((Organism)organisms.get(j)).getFitness());
-				
-				//Check if this is the best score so far
-				if(((Organism)organisms.get(j)).getFitness() > bestFitness){
-					bestFitness = ((Organism)organisms.get(j)).getFitness();
-					bestNetwork = brain;
-				}
+				evaluateOrganism((Organism)organisms.get(j), numExperiments);
 			}
 			
-			/*
-			 * DEBUG MOCK CODE (SPRINT 4) 
-			 * Need to visualise the networks, will explore JNEAT GUI classes
-			 */
-			//String xNameFile = "gen" + i + ".txt";
-			//networkPopulation.print_to_filename(xNameFile);
+			//Save the best contender this generation to a file
+			String filename = "savedGenomes\\GenChamp" + generation;
+			IOseq newFile = new IOseq(filename);
+			newFile.IOseqOpenW(false);
+			bestNetworkThisGen.getGenotype().print_to_file(newFile);
+			newFile.IOseqCloseW();
 			
-			//ARE THEY MATING? GENOME ID, Does that change? If no, does that even mean anything?
-			
-			//WHAT DOES OFFSPRING = 0 IMPLY?
-			
-			//THE SPECIES "DIE" AND FORM NEW ONES BUT DO THE ORGANISMS?
-			
-			//compute average and max fitness for each species
-			Iterator itr_specie;
-			itr_specie = networkPopulation.species.iterator();
-			while (itr_specie.hasNext()) 
-			{
-			   Species _specie = ((Species) itr_specie.next());
-			   _specie.compute_average_fitness();
-			   _specie.compute_max_fitness();
-			}
-			
-			/*
-			 * 
-			 */
-			
-			networkPopulation.epoch(generation++);
-			consoleOut_lastGen(networkPopulation, generation);
+			networkPopulation = evolvePopulation(networkPopulation, generation);
+			generation++;
 		}
+		
+		//Save the best contender overall to a file
+		String filename = "savedGenomes\\OverallChamp";
+		IOseq newFile = new IOseq(filename);
+		newFile.IOseqOpenW(false);
+		bestNetwork.getGenotype().print_to_file(newFile);
+		newFile.IOseqCloseW();
+	}
+	
+	private void evaluateOrganism(Organism organism, int numExperiments){
+		//Extract the neural network from the population, ready for evaluation
+		Network brain = organism.getNet();
+		
+		int scoreTotal = 0;
+		//Loop for each experiment
+		for(int w = 0; w<numExperiments; w++){
+			double lastScore = this.runGame(new MyPacMan(brain),new StarterGhosts(), false, 0);
+			scoreTotal += lastScore;
+		}
+		
+		organism.setFitness(scoreTotal/numExperiments);
+		//organism.setError(60000.0 - (scoreTotal/numExperiments));
+
+		organism.viewtext();
+		
+		//Check if this is the best score this generation
+		if(organism.getFitness() > bestFitnessThisGen){
+			bestFitnessThisGen = organism.getFitness();
+			bestNetworkThisGen = brain;
+		}
+		
+		//Check if this is the best score so far
+		if(organism.getFitness() > bestFitness){
+			bestFitness = organism.getFitness();
+			bestNetwork = brain;
+		}
+	}
+	
+	private Population evolvePopulation(Population networkPopulation, int generation){
+		//compute average and max fitness for each species
+		Iterator itr_specie;
+		itr_specie = networkPopulation.species.iterator();
+		while (itr_specie.hasNext()) 
+		{
+		   Species _specie = ((Species) itr_specie.next());
+		   _specie.compute_average_fitness();
+		   _specie.compute_max_fitness();
+		}
+		
+		networkPopulation.epoch(generation);
+		consoleOut_lastGen(networkPopulation, generation);
+		return networkPopulation;
 	}
 	
 	/*
@@ -206,10 +236,10 @@ public class Executor
 	 */
 	private void consoleOut_lastGen(Population networkPopulation, int genNum){
 		System.out.println();
-		System.out.print("EPOCH ");
+		System.out.print("GENERATION ");
 		System.out.println(genNum);
-		//System.out.print("MEAN FITNESS: ");
-		//System.out.println(networkPopulation.);
+		System.out.print("HIGHEST FITNESS THIS GEN: ");
+		System.out.println(bestFitnessThisGen);
 		System.out.print("HIGHEST FITNESS SO FAR: ");
 		System.out.println(networkPopulation.getHighest_fitness());
 		System.out.println();
