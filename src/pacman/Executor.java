@@ -16,7 +16,9 @@ import java.util.Random;
 import java.util.Vector;
 import java.util.Scanner;
 
-import jneat.*;
+import jneat.Genome;
+import jneat.Neat;
+import jneat.Organism;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
@@ -49,20 +51,15 @@ import static pacman.game.Constants.*;
 @SuppressWarnings("unused")
 public class Executor
 {	
-	
 	//The number of input and output nodes the neural network should have
 	public static int netInputs = 28;
 	private static int netOutputs = 1;
 	
-	private double bestFitness = 0.0;
-	private Network bestNetwork;
-	
-	private double bestFitnessThisGen = 0.0;
-	private Network bestNetworkThisGen;
+	//The amount of lives Ms. Pac-Man should start with during training
+	private int numberOfLives = 1;
 	
 	/**
-	 * The main method. Asks the user some details about the experiments they want to run and 
-	 * initialises the experiments. 
+	 * The main method. 
 	 *
 	 * @param args the command line arguments
 	 * @author kuh1@aber.ac.uk
@@ -70,8 +67,20 @@ public class Executor
 	public static void main(String[] args)
 	{
 		Executor exec=new Executor();
-		Scanner scanner = new Scanner(System.in);
 		
+		//For testing, comment out when not needed. Runs a simulation with the modified human controlled class.
+		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
+		
+		/*
+		//Test feature, load a chosen file
+		IOseq newFile = new IOseq("savedGenomes\\GenChamp134_3794");
+		newFile.IOseqOpenR();
+		Genome champGenome = new Genome(1, newFile);
+		newFile.IOseqCloseR();
+		Organism champOrganism = new Organism(1, champGenome, 1);
+		System.out.println("Running a generation champion in a simulation");
+		exec.runGameTimed(new MyPacMan(champOrganism.getNet()),new StarterGhosts(), true);
+		*/
 		/*
 		//Test feature, load the overall champ
 		IOseq newFile = new IOseq("savedGenomes\\OverallChamp");
@@ -81,7 +90,8 @@ public class Executor
 		Organism champOrganism = new Organism(1, champGenome, 1);
 		System.out.println("Running overall champ in a simulation");
 		exec.runGameTimed(new MyPacMan(champOrganism.getNet()),new StarterGhosts(), true);
-		
+		*/
+		/*
 		//Test feature, load the gen champs
 		int numGens = 2;
 		for(int i = 0; i <= numGens; i++){
@@ -98,8 +108,15 @@ public class Executor
 		}
 		*/
 		
-		//For testing, comment out when not needed. Runs a simulation with the modified human controlled class.
-		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
+		exec.initialise();
+	}
+	
+	/**
+	 * Asks the user some details about the experiments they want to run and 
+	 * initialises the experiments. 
+	 */
+	public void initialise(){
+		Scanner scanner = new Scanner(System.in);
 		
 		//Ask the user how big the population should be
 		int popSize;
@@ -115,134 +132,54 @@ public class Executor
 		System.out.println("Please input the number of experiments to run per evaluation: ");
 		numExperiments = scanner.nextInt();
 		
-		Population networkPopulation = exec.initialisePopulation(popSize, netInputs, netOutputs);
+		EvolutionController evolution = new EvolutionController(popSize, netInputs, netOutputs);
 
-		exec.runExperiment(networkPopulation, numGenerations, numExperiments);
+		runExperiment(evolution, 0, numGenerations, numExperiments);
 		
 		//Run the best network to show final controller performance visually
 		System.out.println("Evolution over, press enter to see a simulation using the best scoring controller");
 		scanner.nextLine(); scanner.nextLine();
 		scanner.close();
-		if(exec.bestNetwork != null){
+		if(evolution.getBestNetwork() != null){
 			System.out.println("Running simulation with the best scoring network");
-			exec.runGameTimed(new MyPacMan(exec.bestNetwork),new StarterGhosts(), true);
+			runGameTimed(new MyPacMan(evolution.getBestNetwork()),new StarterGhosts(), true);
 		}
 	}
 	
-	/*
-	 * Returns a new population of networks with the specified number of input and 
-	 * output nodes. @size determines the size of the population
-	 * @author kuh1@aber.ac.uk
-	 */
-	private Population initialisePopulation(int size, int numInputs, int numOutputs){
-		Population population;
-		
-		Genome startGenome = new Genome(1, numInputs, numOutputs, 0, numInputs + numOutputs, true, 0.8); 
-		population = new Population(startGenome, size);
-		
-		//OR use an alternate method to generate the population. This can cause the first generation to have more than the minimal amount of nodes
-		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 0.8);
-		
-		population.verify();
-		return population;
-	}
-	
-	/*
-	 * Evolves the given population through the specified amount of generations. numExperiments is the 
-	 * amount of games to play to determine fitness, averaging the score of the games. This is done due to 
-	 * the non deterministic nature of the game leading to varying performance of the controller.
+	/**
+	 * Evolves a population of networks through X generations.
+	 * 
+	 * @param evolution The evolution controller
+	 * @param startGeneration The generation number to start on
+	 * @param numGenerations The generation number to end on
+	 * @param numExperiments The amount of games to play to determine fitness, averaging the scores over that many games.
 	 * @author kuh1@aber.ac.uk 
 	 */
-	private void runExperiment(Population networkPopulation, int numGenerations, int numExperiments){
-		int generation = 0;
+	public void runExperiment(EvolutionController evolution, int startGeneration, int numGenerations, int numExperiments){
 		//Loop for each generation
-		for(int i = 0; i < numGenerations; i++){
-			
-			bestFitnessThisGen = 0;
-			Vector organisms = networkPopulation.getOrganisms();
+		for(int generation = startGeneration; generation < numGenerations; generation++){
 			
 			//Loop for each organism in the population
-			for(int j = 0;j < organisms.size();j++){
-				evaluateOrganism((Organism)organisms.get(j), numExperiments);
+			for(int j = 0;j < evolution.getPopulationSize();j++){
+				evolution.evaluateOrganism(j, numExperiments, numberOfLives, this);
 			}
 			
-			//Save the best contender this generation to a file
-			String filename = "savedGenomes\\GenChamp" + generation;
-			IOseq newFile = new IOseq(filename);
-			newFile.IOseqOpenW(false);
-			bestNetworkThisGen.getGenotype().print_to_file(newFile);
-			newFile.IOseqCloseW();
-			
-			networkPopulation = evolvePopulation(networkPopulation, generation);
-			generation++;
+			//Evolve the population
+			evolution.evolvePopulation(generation);
 		}
 		
 		//Save the best contender overall to a file
-		String filename = "savedGenomes\\OverallChamp";
-		IOseq newFile = new IOseq(filename);
-		newFile.IOseqOpenW(false);
-		bestNetwork.getGenotype().print_to_file(newFile);
-		newFile.IOseqCloseW();
-	}
-	
-	private void evaluateOrganism(Organism organism, int numExperiments){
-		//Extract the neural network from the population, ready for evaluation
-		Network brain = organism.getNet();
+		String fileName = "savedGenomes\\OverallChamp";
+		evolution.saveNetwork(evolution.getBestNetwork(), fileName);
 		
-		int scoreTotal = 0;
-		//Loop for each experiment
-		for(int w = 0; w<numExperiments; w++){
-			double lastScore = this.runGame(new MyPacMan(brain),new StarterGhosts(), false, 0);
-			scoreTotal += lastScore;
+		//Ask the user if they want to continue the experiment
+		Scanner scan = new Scanner(System.in);
+		System.out.println("Enter 0 to finish the experiment, enter a number greater than 0 to continue the experiment for that many more generations");
+		int input;
+		input = scan.nextInt();
+		if(input > 0){
+			runExperiment(evolution, numGenerations, numGenerations+input, numExperiments);
 		}
-		
-		organism.setFitness(scoreTotal/numExperiments);
-		//organism.setError(60000.0 - (scoreTotal/numExperiments));
-
-		organism.viewtext();
-		
-		//Check if this is the best score this generation
-		if(organism.getFitness() > bestFitnessThisGen){
-			bestFitnessThisGen = organism.getFitness();
-			bestNetworkThisGen = brain;
-		}
-		
-		//Check if this is the best score so far
-		if(organism.getFitness() > bestFitness){
-			bestFitness = organism.getFitness();
-			bestNetwork = brain;
-		}
-	}
-	
-	private Population evolvePopulation(Population networkPopulation, int generation){
-		//compute average and max fitness for each species
-		Iterator itr_specie;
-		itr_specie = networkPopulation.species.iterator();
-		while (itr_specie.hasNext()) 
-		{
-		   Species _specie = ((Species) itr_specie.next());
-		   _specie.compute_average_fitness();
-		   _specie.compute_max_fitness();
-		}
-		
-		networkPopulation.epoch(generation);
-		consoleOut_lastGen(networkPopulation, generation);
-		return networkPopulation;
-	}
-	
-	/*
-	 * Output information about the last generation to the console
-	 * @author kuh1@aber.ac.uk
-	 */
-	private void consoleOut_lastGen(Population networkPopulation, int genNum){
-		System.out.println();
-		System.out.print("GENERATION ");
-		System.out.println(genNum);
-		System.out.print("HIGHEST FITNESS THIS GEN: ");
-		System.out.println(bestFitnessThisGen);
-		System.out.print("HIGHEST FITNESS SO FAR: ");
-		System.out.println(networkPopulation.getHighest_fitness());
-		System.out.println();
 	}
 	
 	/**
@@ -259,6 +196,46 @@ public class Executor
 	{
 		Game game=new Game(0);
 
+		GameView gv=null;
+		
+		if(visual)
+			gv=new GameView(game).showGame();
+		
+		while(!game.gameOver())
+		{
+	        game.advanceGame(pacManController.getMove(game.copy(),-1),ghostController.getMove(game.copy(),-1));
+	        
+	        try{Thread.sleep(delay);}catch(Exception e){}
+	        
+	        if(visual)
+	        	gv.repaint();
+		}
+		
+		//Make note of the games score so that controller fitness can be evaluated
+ 		double lastScore = game.getScore();
+ 		return lastScore;
+	}
+	
+	/**
+	 * Run a game in asynchronous mode: the game waits until a move is returned. In order to slow thing down in case
+	 * the controllers return very quickly, a time limit can be used. If fasted gameplay is required, this delay
+	 * should be put as 0. Modified to allow Ms.Pac Man to start with less or extra lives
+	 *
+	 * @param pacManController The Pac-Man controller
+	 * @param numLives The number of lives Ms. Pac-Man should start with
+	 * @param ghostController The Ghosts controller
+	 * @param visual Indicates whether or not to use visuals
+	 * @param delay The delay between time-steps
+	 * @author Modified by Kurt Hodges
+	 */
+	public double runGame(Controller<MOVE> pacManController, int numLives, Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int delay)
+	{
+		Game game=new Game(0);
+		
+		if(numLives > 0){
+			game.setPacManLives(numLives);
+		}
+		
 		GameView gv=null;
 		
 		if(visual)

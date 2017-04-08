@@ -20,8 +20,7 @@ public class GhostTrackerDirectionalComparator implements Comparator<GhostTracke
 	
 	/**
 	 * Creates a new comparator for ghost trackers
-	 * @param theDirection 
-	 * 			Compares GhostTrackers based on the distance to each tracker's ghost in this direction
+	 * @param theDirection Compares GhostTrackers based on the distance to each tracker's ghost in this direction
 	 */
 	public GhostTrackerDirectionalComparator(MOVE theDirection){
 		direction = theDirection;
