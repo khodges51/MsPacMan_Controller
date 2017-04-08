@@ -717,6 +717,16 @@ public final class Game
 		else if((pills.isEmpty() && powerPills.isEmpty()) || currentLevelTime>=LEVEL_LIMIT)
 			_newLevelReset();
 	}
+	
+	/**
+	 * Set the number of lives PacMan should have
+	 * @param numLives
+	 * @author Kurt Hodges
+	 */
+	public void setPacManLives(int numLives)
+	{
+		pacman.numberOfLivesRemaining = numLives;
+	}
 
 	/////////////////////////////////////////////////////////////////////////////
 	///////////////////  Query Methods (return only)  ///////////////////////////

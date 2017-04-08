@@ -27,10 +27,8 @@ public class GhostTracker{
 	
 	/**
 	 * Creates a new GhostTracker
-	 * @param theGhost
-	 * 			The ghost to keep track of
-	 * @param theGame
-	 * 			The game the ghost is in
+	 * @param theGhost The ghost to keep track of
+	 * @param theGame The game the ghost is in
 	 */
 	public GhostTracker(GHOST theGhost, Game theGame){
 		ghost = theGhost;
@@ -40,11 +38,9 @@ public class GhostTracker{
 	/**
 	 * Gets the directional distance from Ms. Pac-Man to the ghost. This distance is the
 	 * path distance, I.E. if you travelled through the maze to reach the ghost. 
-	 * @param direction
-	 * 		The direction from Ms. Pac-Man's perspective
-	 * @return
-	 * 		The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
-	 * 		that direction. 
+	 * @param direction The direction from Ms. Pac-Man's perspective
+	 * @return The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
+	 * that direction. 
 	 */
 	public double getDirectionalDistance(MOVE direction){
 		double realDistance;
@@ -64,8 +60,7 @@ public class GhostTracker{
 	/**
 	 * Checks if the path from Ms. Pac-Man in the given direction to this ghost contains a junction or not.
 	 * @param direction
-	 * @return	
-	 * 		1.0 if there is a junction, 0.0 if not
+	 * @return 1.0 if there is a junction, 0.0 if not
 	 */
 	public boolean doesPathContainJunction(MOVE direction){
 		int[] shortestPath = new int[0];
@@ -91,12 +86,9 @@ public class GhostTracker{
 	 * Is the ghost approaching from this direction?
 	 * This is a simplified interpretation of the story. I could possibly take into account ghosts last direction of 
 	 * travel/non-reversal rule to come up with a more comprehensive implementation. 
-	 * @param direction
-	 * 			The direction to check "is the ghost approaching from this direction" from Ms. Pac-Man's perspective
-	 * @param pacManIndex
-	 * 			The current location of Ms. Pac-Man
-	 * @return
-	 * 			True if the ghost is approaching, false if not
+	 * @param direction The direction to check "is the ghost approaching from this direction" from Ms. Pac-Man's perspective
+	 * @param pacManIndex The current location of Ms. Pac-Man
+	 * @return True if the ghost is approaching, false if not
 	 */
 	public boolean isGhostApproaching(MOVE direction, int pacManIndex){
 		//Find the direction you would travel from Ms.Pac-Man to the ghost. This is probably the optimal path and so the direction
@@ -140,11 +132,9 @@ public class GhostTracker{
 	 * 
 	 * Gets the directional distance from Ms. Pac-Man to the ghost. This distance is the
 	 * path distance, I.E. if you travelled through the maze to reach the ghost. 
-	 * @param direction
-	 * 		The direction from Ms. Pac-Man's perspective
-	 * @return
-	 * 		The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
-	 * 		that direction. 
+	 * @param direction The direction from Ms. Pac-Man's perspective
+	 * @return The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
+	 * that direction. 
 	 */
 	public double getDirectionalDistance_drawn(MOVE direction, Color color){
 		double realDistance;

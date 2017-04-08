@@ -32,8 +32,7 @@ public class MyPacMan extends Controller<MOVE>
 	
 	/**
 	 * Create a new controller for Ms. Pac-MAn
-	 * @param network
-	 * 			The neural network that the controller will use to make decisions
+	 * @param network The neural network that the controller will use to make decisions
 	 */
 	public MyPacMan(Network network){
 		this.network = network;
@@ -111,84 +110,20 @@ public class MyPacMan extends Controller<MOVE>
 	private double[] getConstantInputs(double[] networkInputs, int startIndex, Game game){
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
-		//Get the ghost related inputs
-		networkInputs = getConstantGhostInfo(networkInputs, startIndex, game);
-		
 		//Get proportion of remaining pills
 		double amountPillsLeft = (double)game.getNumberOfActivePills() / (double)game.getNumberOfPills();
-		networkInputs[startIndex + 3] = amountPillsLeft;
+		networkInputs[startIndex] = amountPillsLeft;
 		
 		//Get proportion of remaining power pills
 		double amountPowerPillsLeft = (double)game.getNumberOfActivePowerPills() / (double)game.getNumberOfPowerPills();
-		networkInputs[startIndex + 4] = amountPowerPillsLeft;
+		networkInputs[startIndex + 1] = amountPowerPillsLeft;
+		
+		//Get the ghost related inputs
+		networkInputs = getConstantGhostInfo(networkInputs, startIndex + 2, game);
 
 		//Are we 20 steps away from a power pill?
 		networkInputs[startIndex + 5] = dataNormalizer.normalizeBoolean(isXStepsAway(pacManIndex, game.getActivePowerPillsIndices(), 20, game));
 
-		return networkInputs;
-	}
-	 
-	/*
-	 *  Returns the neural network inputs for the given direction
-	 */
-	private double[] getDirectionalInputs(double[] networkInputs, int startIndex, MOVE direction, Game game){
-		int pacManIndex=game.getPacmanCurrentNodeIndex();
-		
-		//Get the ghost related inputs
-		networkInputs = getDirectionalGhostInfo(networkInputs, startIndex, direction, game);
-		
-		//Get distance to closest pill
-		networkInputs[startIndex + 16] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 200, game), 200);
-		
-		//Get distance to closest power pill
-		networkInputs[startIndex + 17] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 200, game), 200);
-		
-		//Get distance to closest junction
-		networkInputs[startIndex + 18] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 200, game), 200);
-		
-		/*
-		 * Is the nearest junction blocked?
-		 * Code is working but hideous and probably inefficient
-		 */
-		double maxDistance = 200;
-		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(pacManIndex, game.getJunctionIndices(), direction, maxDistance);
-		int[] pathToJunction;
-		
-		if(closestNode != -1){
-			pathToJunction = game.getShortestPath_absolute(pacManIndex, closestNode, direction);
-			
-			int pinkyIndex = game.getGhostCurrentNodeIndex(GHOST.PINKY);
-			int blinkyIndex = game.getGhostCurrentNodeIndex(GHOST.BLINKY);
-			int inkyIndex = game.getGhostCurrentNodeIndex(GHOST.INKY);
-			int sueIndex = game.getGhostCurrentNodeIndex(GHOST.SUE);
-			
-			//Set input to default.....
-			boolean isBlocked = false;
-			
-			for(int i = 0; i < pathToJunction.length; i++){
-				if(pathToJunction[i] == pinkyIndex || pathToJunction[i] == sueIndex || pathToJunction[i] == blinkyIndex || pathToJunction[i] == inkyIndex){
-					//Path is blocked
-					isBlocked = true;
-				}
-			}
-			
-			networkInputs[startIndex + 19] = dataNormalizer.normalizeBoolean(isBlocked);
-		}else{
-			//Set input to false? No closest junction found...
-			networkInputs[startIndex + 19] = dataNormalizer.normalizeBoolean(false);
-		}
-		/*
-		 * 
-		 */
-		
-		//Max pills in 40 steps
-		networkInputs[startIndex + 20] = dataNormalizer.normalizeDouble(maxIn40Steps(
-				direction, game.getNeighbour(pacManIndex, direction), game.getActivePillsIndices(), 0, 0, game), 5);
-		
-		//Max junctions in 40 steps
-		networkInputs[startIndex + 21] = dataNormalizer.normalizeDouble(maxIn40Steps(
-				direction, game.getNeighbour(pacManIndex, direction), game.getJunctionIndices(), 0, 0, game), 4);
-		
 		return networkInputs;
 	}
 	
@@ -221,6 +156,38 @@ public class MyPacMan extends Controller<MOVE>
 		}else{
 			networkInputs[startIndex + 2] = dataNormalizer.normalizeBoolean(false);
 		}
+		
+		return networkInputs;
+	}
+	 
+	/*
+	 *  Returns the neural network inputs for the given direction
+	 */
+	private double[] getDirectionalInputs(double[] networkInputs, int startIndex, MOVE direction, Game game){
+		int pacManIndex=game.getPacmanCurrentNodeIndex();
+		
+		//Get the ghost related inputs
+		networkInputs = getDirectionalGhostInfo(networkInputs, startIndex, direction, game);
+		
+		//Get distance to closest pill
+		networkInputs[startIndex + 16] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePillsIndices(), 200, game), 200);
+		
+		//Get distance to closest power pill
+		networkInputs[startIndex + 17] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getActivePowerPillsIndices(), 200, game), 200);
+		
+		//Get distance to closest junction
+		networkInputs[startIndex + 18] = dataNormalizer.normalizeDouble(getDirectionalDistanceToNearest(direction, pacManIndex, game.getJunctionIndices(), 200, game), 200);
+		
+		//Is the nearest junction blocked?
+		networkInputs[startIndex + 19] = dataNormalizer.normalizeBoolean(isNearestJunctionBlocked(pacManIndex, direction, game));
+		
+		//Max pills in 40 steps
+		networkInputs[startIndex + 20] = dataNormalizer.normalizeDouble(maxIn40Steps(
+				direction, game.getNeighbour(pacManIndex, direction), game.getActivePillsIndices(), game), 10);
+		
+		//Max junctions in 40 steps
+		networkInputs[startIndex + 21] = dataNormalizer.normalizeDouble(maxIn40Steps(
+				direction, game.getNeighbour(pacManIndex, direction), game.getJunctionIndices(), game), 10);
 		
 		return networkInputs;
 	}
@@ -262,6 +229,47 @@ public class MyPacMan extends Controller<MOVE>
 		}
 		
 		return isXStepsAway;
+	}
+	
+	/*
+	 * Is the nearest junction blocked?
+	 */
+	private boolean isNearestJunctionBlocked(int startIndex, MOVE direction, Game game){
+		double maxDistance = 200;
+		int closestNode = game.getClosestNodeIndexFromNodeIndex_Directional(startIndex, game.getJunctionIndices(), direction, maxDistance);
+		int[] pathToJunction;
+		
+		if(closestNode != -1){
+			pathToJunction = game.getShortestPath_absolute(startIndex, closestNode, direction);
+			
+			int pinkyIndex = game.getGhostCurrentNodeIndex(GHOST.PINKY);
+			int blinkyIndex = game.getGhostCurrentNodeIndex(GHOST.BLINKY);
+			int inkyIndex = game.getGhostCurrentNodeIndex(GHOST.INKY);
+			int sueIndex = game.getGhostCurrentNodeIndex(GHOST.SUE);
+			
+			//Set input to default.....
+			boolean isBlocked = false;
+			
+			for(int i = 0; i < pathToJunction.length; i++){
+				if(pathToJunction[i] == pinkyIndex || pathToJunction[i] == sueIndex || pathToJunction[i] == blinkyIndex || pathToJunction[i] == inkyIndex){
+					//Path is blocked
+					isBlocked = true;
+				}
+			}
+			
+			return isBlocked;
+		}else{
+			//No closest junction found...
+			return false;
+		}
+	}
+	
+	/*
+	 * Searches in the given direction for 40 steps, checking each possible path, to find matches in the 'targetNodeIndicies' array and return
+	 * the maximum amount that can be found in 40 steps. E.g maximum number of pills in 40 steps
+	 */
+	private double maxIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies, Game game){
+		return maxIn40Steps(direction, startIndex, targetNodeIndicies, 0, 0, game);
 	}
 	
 	/*

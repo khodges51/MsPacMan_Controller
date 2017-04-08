@@ -65,15 +65,15 @@
    
    /** Probability  of mutate trait */
 	  public static double p_mutate_random_trait_prob
-	  =0.15;
+	  =0.12;
    
    /** Probability  of mutate link trait */
 	  public static double p_mutate_link_trait_prob
-	  =0.15;
+	  =0.12;
    
    /** Probability  of mutate node trait */
 	  public static double p_mutate_node_trait_prob
-	  =0.15;
+	  =0.12;
    
    /** Probability  of mutate link weight */
 	  public static double p_mutate_link_weights_prob
@@ -89,31 +89,31 @@
    
    /** Probability  of add a node to struct of genome */
 	  public static double p_mutate_add_node_prob
-	  =0.1;
+	  =0.05;
    
    /** Probability  of add a link to struct of genome */
 	  public static double p_mutate_add_link_prob
-	  =0.2;
+	  =0.1;
    
    /** Probability  of a mate being outside species */
 	  public static double p_interspecies_mate_rate
-	  =0.0010;
+	  =0.0011;
    
    /** Probability  of cross in a many point of two genome */
 	  public static double p_mate_multipoint_prob
-	  =0.35;
+	  =0.32;
    
    /** Probability  of cross in a many point of two genome with media */
 	  public static double p_mate_multipoint_avg_prob
-	  =0.35;
+	  =0.32;
    
    /** Probability  of cross in a single point of two genome */
 	  public static double p_mate_singlepoint_prob
-	  =0.35;
+	  =0.32;
    
    /** Probability  of mating without mutation */
 	  public static double p_mate_only_prob
-	  =0.3;
+	  =0.22;
    
    /** Probability of forcing selection of ONLY links that are naturally recurrent */
 	  public static double p_recur_only_prob
@@ -138,7 +138,7 @@
    
    /** The number of babies to siphen off to the champions */
 	  public static int p_babies_stolen
-	  =5;
+	  =2;
    
    /** The number of runs for an experiment */
 	  public static int p_num_runs
