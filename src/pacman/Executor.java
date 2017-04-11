@@ -18,6 +18,7 @@ import java.util.Scanner;
 
 import jneat.Genome;
 import jneat.Neat;
+import jneat.Network;
 import jneat.Organism;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
@@ -73,49 +74,27 @@ public class Executor
 		
 		/*
 		//Test feature, load a chosen file
-		IOseq newFile = new IOseq("savedGenomes\\GenChamp134_3794");
-		newFile.IOseqOpenR();
-		Genome champGenome = new Genome(1, newFile);
-		newFile.IOseqCloseR();
-		Organism champOrganism = new Organism(1, champGenome, 1);
+		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
+		Network theNet = evolution.loadNetwork("savedGenomes\\GenChamp134_3794");
 		System.out.println("Running a generation champion in a simulation");
-		exec.runGameTimed(new MyPacMan(champOrganism.getNet()),new StarterGhosts(), true);
+		exec.runGameTimed(new MyPacMan(theNet),new StarterGhosts(), true);
 		*/
 		/*
 		//Test feature, load the overall champ
-		IOseq newFile = new IOseq("savedGenomes\\OverallChamp");
-		newFile.IOseqOpenR();
-		Genome champGenome = new Genome(1, newFile);
-		newFile.IOseqCloseR();
-		Organism champOrganism = new Organism(1, champGenome, 1);
-		System.out.println("Running overall champ in a simulation");
-		exec.runGameTimed(new MyPacMan(champOrganism.getNet()),new StarterGhosts(), true);
-		*/
-		/*
-		//Test feature, load the gen champs
-		int numGens = 2;
-		for(int i = 0; i <= numGens; i++){
-			String fileName = "savedGenomes\\GenChamp" + i;
-			newFile = new IOseq(fileName);
-			newFile.IOseqOpenR();
-			champGenome = new Genome(1, newFile);
-			newFile.IOseqCloseR();
-			champOrganism = new Organism(1, champGenome, 1);
-			System.out.print("Running gen ");
-			System.out.print(i);
-			System.out.println(" champ in a simulation");
-			exec.runGameTimed(new MyPacMan(champOrganism.getNet()),new StarterGhosts(), true);
-		}
+		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
+		Network theNet = evolution.loadNetwork("savedGenomes\\OverallChamp");
+		System.out.println("Running the overall champion in a simulation");
+		exec.runGameTimed(new MyPacMan(theNet),new StarterGhosts(), true);
 		*/
 		
 		exec.initialise();
 	}
 	
-	/**
+	/*
 	 * Asks the user some details about the experiments they want to run and 
 	 * initialises the experiments. 
 	 */
-	public void initialise(){
+	private void initialise(){
 		Scanner scanner = new Scanner(System.in);
 		
 		//Ask the user how big the population should be
@@ -137,9 +116,6 @@ public class Executor
 		runExperiment(evolution, 0, numGenerations, numExperiments);
 		
 		//Run the best network to show final controller performance visually
-		System.out.println("Evolution over, press enter to see a simulation using the best scoring controller");
-		scanner.nextLine(); scanner.nextLine();
-		scanner.close();
 		if(evolution.getBestNetwork() != null){
 			System.out.println("Running simulation with the best scoring network");
 			runGameTimed(new MyPacMan(evolution.getBestNetwork()),new StarterGhosts(), true);
@@ -180,6 +156,7 @@ public class Executor
 		if(input > 0){
 			runExperiment(evolution, numGenerations, numGenerations+input, numExperiments);
 		}
+		scan.close();
 	}
 	
 	/**
