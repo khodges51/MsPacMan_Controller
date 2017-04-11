@@ -14,6 +14,7 @@ import jneat.Species;
 
 /**
  * This class controls the evolution of a population. 
+ * Evaluate organisms, evolve the population and save/load networks.
  * 
  * @author Kurt Hodges
  * 		   kuh1@aber.ac.uk
@@ -115,6 +116,20 @@ public class EvolutionController {
 		newFile.IOseqOpenW(false);
 		network.getGenotype().print_to_file(newFile);
 		newFile.IOseqCloseW();
+	}
+	
+	/**
+	 * Load a network from a file.
+	 * @param fileName The name of the file which the network is stored
+	 * @return The network
+	 */
+	public Network loadNetwork(String fileName){
+		IOseq newFile = new IOseq(fileName);
+		newFile.IOseqOpenR();
+		Genome champGenome = new Genome(1, newFile);
+		newFile.IOseqCloseR();
+		Organism organism = new Organism(1, champGenome, 1);
+		return organism.getNet();
 	}
 	
 	/**

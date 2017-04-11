@@ -136,11 +136,12 @@ public class GhostTracker{
 	 * @return The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
 	 * that direction. 
 	 */
+	/*
 	public double getDirectionalDistance_drawn(MOVE direction, Color color){
 		double realDistance;
 		double distance = maxDistance;
 
-		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
+		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			realDistance = game.getShortestPathDistance_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
 			GameView.addPoints(game,color,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction));
 			if(realDistance < maxDistance){
@@ -150,18 +151,19 @@ public class GhostTracker{
 		
 		return distance;
 	}
-	
+	*/
 	/**
 	 * 
 	 * @param direction
 	 * @param color
 	 * @return
 	 */
+	/*
 	public double doesPathContainJunction_Drawn(MOVE direction, Color color){
 		double doesContainJunction = -1.0;
 		int[] shortestPath = new int[0];
 		
-		if(/*game.getGhostEdibleTime(ghost)==0 && */game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
+		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			shortestPath = game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
 			GameView.addPoints(game,Color.GRAY,shortestPath);
 		}
@@ -179,5 +181,5 @@ public class GhostTracker{
 		
 		return doesContainJunction;
 	}
-	
+	*/
 }
