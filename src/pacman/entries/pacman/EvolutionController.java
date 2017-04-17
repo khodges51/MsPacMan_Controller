@@ -2,6 +2,12 @@ package pacman.entries.pacman;
 
 import jNeatCommon.IOseq;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
 import pacman.Executor;
@@ -103,6 +109,9 @@ public class EvolutionController {
 		//Save the best contender this generation to a file
 		String fileName = "savedGenomes\\GenChamp" + generation + "_" + (int)bestFitnessThisGen;
 		saveNetwork(bestNetworkThisGen, fileName);
+		//Save the best fitness to an experiment log
+		writeToExperimentLog(bestFitnessThisGen);
+		
 		bestFitnessThisGen = 0.0;
 	}
 	
@@ -189,5 +198,30 @@ public class EvolutionController {
 		System.out.print("HIGHEST FITNESS SO FAR: ");
 		System.out.println(networkPopulation.getHighest_fitness());
 		System.out.println();
+	}
+	
+	/*
+	 * Output the given fitness to a .txt file.
+	 * This could be used to note down the best fitness each gen
+	 */
+	private void writeToExperimentLog(double fitness){
+		FileWriter writer;
+		try {
+			String theLine = fitness + "\n";
+			File theFile = new File ("savedGenomes\\experimentLog.txt");
+			writer = new FileWriter(theFile, true);
+			writer.write(theLine);
+			writer.flush();
+		    writer.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

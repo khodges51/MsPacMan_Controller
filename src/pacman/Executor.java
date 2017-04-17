@@ -53,7 +53,7 @@ import static pacman.game.Constants.*;
 public class Executor
 {	
 	//The number of input and output nodes the neural network should have
-	public static int netInputs = 28;
+	public static int netInputs = 24;
 	private static int netOutputs = 1;
 	
 	//The amount of lives Ms. Pac-Man should start with during training

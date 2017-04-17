@@ -15,11 +15,8 @@ public class DataNormalizer {
 	 * @return A value between 0 and 1
 	 */
 	public double normalizeDouble(double value, double maxVal){
-		double normalizedValue = value;
-		
-		normalizedValue = value / maxVal;
-		
-		return normalizedValue;
+		double output = value / maxVal;
+		return output;
 	}
 	
 	/**

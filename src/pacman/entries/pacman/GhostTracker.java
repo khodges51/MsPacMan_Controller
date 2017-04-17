@@ -91,6 +91,14 @@ public class GhostTracker{
 	 * @return True if the ghost is approaching, false if not
 	 */
 	public boolean isGhostApproaching(MOVE direction, int pacManIndex){
+		//Temp fix, assuming a constant input is better than a broken one.
+		return false;
+		
+		/*
+		if(game.getGhostLairTime(ghost) > 0){
+			return false;
+		}
+		
 		//Find the direction you would travel from Ms.Pac-Man to the ghost. This is probably the optimal path and so the direction
 		//of approach.
 		MOVE incomingDirection = game.getNextMoveTowardsTarget(pacManIndex, game.getGhostCurrentNodeIndex(ghost), DM.PATH);
@@ -99,6 +107,7 @@ public class GhostTracker{
 		}else{
 			return false;
 		}
+		*/
 	}
 	
 	/**
@@ -125,7 +134,6 @@ public class GhostTracker{
 	 * TEST STUFF
 	 */
 	
-	
 	/**
 	 * This is a test version of the function, it draws a coloured line to the ghost from
 	 * Ms Pac.Man
@@ -136,50 +144,45 @@ public class GhostTracker{
 	 * @return The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
 	 * that direction. 
 	 */
-	/*
-	public double getDirectionalDistance_drawn(MOVE direction, Color color){
+	public double getDirectionalDistanceDrawn(MOVE direction, Color drawColor){
 		double realDistance;
 		double distance = maxDistance;
 
+		//Only compute if the ghost is out of the lair and the move is possible
 		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			realDistance = game.getShortestPathDistance_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
-			GameView.addPoints(game,color,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction));
 			if(realDistance < maxDistance){
 				distance = realDistance;
+				GameView.addPoints(game,drawColor,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction));
 			}
 		}
 		
 		return distance;
 	}
-	*/
 	/**
 	 * 
 	 * @param direction
 	 * @param color
 	 * @return
 	 */
-	/*
-	public double doesPathContainJunction_Drawn(MOVE direction, Color color){
-		double doesContainJunction = -1.0;
+	public boolean doesPathContainJunctionDrawn(MOVE direction){
 		int[] shortestPath = new int[0];
 		
+		//Only compute if the ghost is out of the lair and the move is possible
 		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			shortestPath = game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
-			GameView.addPoints(game,Color.GRAY,shortestPath);
+		}else{
+			//Return true if the ghost is in the lair
+			return true;
 		}
 		
+		//Search for a junction in the path array
 		for(int i = 0; i < shortestPath.length; i++){
-			if(game.isJunction(shortestPath[i])){
-					doesContainJunction = 1.0;
-					GameView.addPoints(game, color, shortestPath[i]);
-			}
+			if(game.isJunction(shortestPath[i]))
+					return true;
 		}
 		
-		if(game.getGhostLairTime(ghost)!=0){
-			doesContainJunction = 1.0;
-		}
-		
-		return doesContainJunction;
+		return false;
 	}
-	*/
+	
 }

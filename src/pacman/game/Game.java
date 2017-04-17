@@ -1407,7 +1407,7 @@ public final class Game
 	 * @author Modified by Kurt Hodges
 	 * @return the index of the closest node in the given direction, up to a distance of maxDistance away
 	 */
-	public int getClosestNodeIndexFromNodeIndex_Directional(int fromNodeIndex,int[] targetNodeIndices, MOVE direction, double maxDistance)
+	public int getClosestNodeIndexFromNodeIndex_directional(int fromNodeIndex,int[] targetNodeIndices, MOVE direction, double maxDistance)
 	{
 		double minDistance=Integer.MAX_VALUE;
 		int target=-1;
@@ -1424,7 +1424,6 @@ public final class Game
 			if(distance_manhattan < maxDistance){
 				
 				//Perform a A* path search and calculate path distance for this node
-				//The performance loss here is questionable and should be investigated
 				distance_directional=getShortestPathDistance_absolute(fromNodeIndex, targetNodeIndices[i], direction);
 				
 				if(distance_directional<minDistance)

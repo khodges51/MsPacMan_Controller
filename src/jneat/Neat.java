@@ -45,15 +45,15 @@
    
    /** factor multiply weight difference */
 	  public static double p_mutdiff_coeff
-	  =0.4;
+	  =0.5;
    
    /** threshold under which two Genomes are the same species */
 	  public static double p_compat_threshold 
-	  =3.0;
+	  =4.0;
    
    /** How much does age matter in epoch cycle */
 	  public static double p_age_significance 
-	  = 1.0;
+	  = 1.05;
    
    /** Percent of ave fitness for survival */
 	  public static double p_survival_thresh
@@ -61,35 +61,35 @@
    
    /** Probability  of a non-mating reproduction */
 	  public static double p_mutate_only_prob
-	  =0.25;
+	  =0.3;
    
    /** Probability  of mutate trait */
 	  public static double p_mutate_random_trait_prob
-	  =0.12;
+	  =0.10;
    
    /** Probability  of mutate link trait */
 	  public static double p_mutate_link_trait_prob
-	  =0.12;
+	  =0.10;
    
    /** Probability  of mutate node trait */
 	  public static double p_mutate_node_trait_prob
-	  =0.12;
+	  =0.10;
    
    /** Probability  of mutate link weight */
 	  public static double p_mutate_link_weights_prob
-	  =0.9;
+	  =0.80;
    
    /** Probability  of mutate status ena->dis | dis-ena of gene */
 	  public static double p_mutate_toggle_enable_prob
-	  =0.0;
+	  =0.05;
    
    /** Probability  of switch status to ena of gene */
 	  public static double p_mutate_gene_reenable_prob
-	  =0.0;
+	  =0.01;
    
    /** Probability  of add a node to struct of genome */
 	  public static double p_mutate_add_node_prob
-	  =0.05;
+	  =0.01;
    
    /** Probability  of add a link to struct of genome */
 	  public static double p_mutate_add_link_prob
@@ -97,23 +97,23 @@
    
    /** Probability  of a mate being outside species */
 	  public static double p_interspecies_mate_rate
-	  =0.0011;
+	  =0.005;
    
    /** Probability  of cross in a many point of two genome */
 	  public static double p_mate_multipoint_prob
-	  =0.32;
+	  =0.30;
    
    /** Probability  of cross in a many point of two genome with media */
 	  public static double p_mate_multipoint_avg_prob
-	  =0.32;
+	  =0.30;
    
    /** Probability  of cross in a single point of two genome */
 	  public static double p_mate_singlepoint_prob
-	  =0.32;
+	  =0.30;
    
    /** Probability  of mating without mutation */
 	  public static double p_mate_only_prob
-	  =0.22;
+	  =0.20;
    
    /** Probability of forcing selection of ONLY links that are naturally recurrent */
 	  public static double p_recur_only_prob
@@ -125,7 +125,7 @@
    
    /** Age where Species starts to be penalized */
 	  public static int p_dropoff_age 
-	  = 50; //COULD BE SOMETHING TO WATCH OUT FOR, IF 23 GENS DOES THE JOB THEN WHAT DO I DO ABOUT THIS?
+	  = 30; 
 	  
    
    /** Number of tries mutate_add_link will attempt to find an open link */
@@ -138,7 +138,7 @@
    
    /** The number of babies to siphen off to the champions */
 	  public static int p_babies_stolen
-	  =2;
+	  =1;
    
    /** The number of runs for an experiment */
 	  public static int p_num_runs
