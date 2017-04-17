@@ -4,14 +4,10 @@ import static pacman.game.Constants.EDIBLE_TIME;
 import static pacman.game.Constants.EDIBLE_TIME_REDUCTION;
 import static pacman.game.Constants.LEVEL_RESET_REDUCTION;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.PriorityQueue;
 
 import pacman.Executor;
 import pacman.controllers.Controller;
-import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
@@ -22,7 +18,8 @@ import jneat.*;
  * This class is where contestants put their code for Ms. Pac-Man, deciding which direction to
  * travel each game cycle. My implementation will input information into a neural network for
  * each possible direction of travel, and evaluate the output to determine which direction is most
- * suitable. 
+ * suitable. This class will contain implementations of only the most basic inputs, using the GameQuery
+ * class for finding the remaining inputs.
  * 
  * @author Kurt Hodges
  * 		   kuh1@aber.ac.uk
@@ -30,8 +27,11 @@ import jneat.*;
  */
 public class MyPacMan extends Controller<MOVE>
 {
+	//The brain of this controller
 	private Network network;
-	private DataNormalizer dataNormalizer;
+	//Used to scale data so it can be input into the ANN
+	private Normalizer dataNormalizer;
+	//Used to find information about the game state
 	private GameQuery gameQuery;
 	
 	/**
@@ -40,7 +40,7 @@ public class MyPacMan extends Controller<MOVE>
 	 */
 	public MyPacMan(Network network){
 		this.network = network;
-		dataNormalizer = new DataNormalizer();
+		dataNormalizer = new Normalizer();
 	}
 	
 	/**
@@ -50,8 +50,7 @@ public class MyPacMan extends Controller<MOVE>
 	public MOVE getMove(Game game, long timeDue) 
 	{			
 		gameQuery = new GameQuery(game);
-		double[] networkInputs = new double[Executor.netInputs];
-		
+		double[] networkInputs = new double[Executor.netInputs];	
 		int bestMoveIndex = 0;
 		double largestOutput = -1.0;
 		
@@ -82,9 +81,9 @@ public class MyPacMan extends Controller<MOVE>
 				 largestOutput = networkOutput;
 			 }
 			 
-			consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
+			//consoleOut_inputsAndOutputs(direction, networkInputs, networkOutput);
 		}
-		System.out.println();
+		//System.out.println();
 		
 		return MOVE.getByIndex(bestMoveIndex);
 	}
@@ -93,10 +92,11 @@ public class MyPacMan extends Controller<MOVE>
 	 *  Loads the neural network with the given inputs and returns the output
 	 */
 	private double runNetwork(double[] networkInputs){
+		//Input the input array into the networkd
 		network.load_sensors(networkInputs);
 		 
 		 int net_depth = network.max_depth();
-		 // first activate from sensor to next layer....
+		 // first activate from sensor to next layer.... 
 		 network.activate();
 		 // next activate each layer until the last level is reached
 		 for (int relax = 0; relax <= net_depth; relax++)
@@ -104,6 +104,7 @@ public class MyPacMan extends Controller<MOVE>
 			 network.activate();
 		 }
 		 
+		 //Find the output and reset the network
 		 double output = ((NNode) network.getOutputs().elementAt(0)).getActivation();
 		 network.flush();
 		 return output;
@@ -208,11 +209,14 @@ public class MyPacMan extends Controller<MOVE>
 	private double[] getDirectionalGhostInfo(double[] networkInputs, int startIndex, MOVE direction, Game game){
 		int pacManIndex=game.getPacmanCurrentNodeIndex();
 		
+		//Sort each ghost by directional distance
 		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
 		for(GHOST ghost : GHOST.values()){
 			GhostTracker ghostTracker = new GhostTracker(ghost, game);
 			orderedGhosts.add(ghostTracker);
 		}
+		
+		//Loop through the ghosts from closest to farthest 
 		for(int j = startIndex; j < startIndex + 4; j++){
 			GhostTracker ghostTracker = orderedGhosts.poll();
 			networkInputs[j] = dataNormalizer.normalizeDouble(ghostTracker.getDirectionalDistance(direction), 200);
@@ -228,8 +232,7 @@ public class MyPacMan extends Controller<MOVE>
 	 * 
 	 * 	Below is code for console output. 
 	 *  This will most likely only be used for testing, and so should probably be deleted at the
-	 *  end of the project. For now proof of testing will be screen shots and tables until I can
-	 *  figure out appropriate unit testing.
+	 *  end of the project. 
 	 * 
 	 */
 	
