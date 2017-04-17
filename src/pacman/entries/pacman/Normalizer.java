@@ -6,7 +6,7 @@ package pacman.entries.pacman;
  * @author Kurt Hodges
  *
  */
-public class DataNormalizer {
+public class Normalizer {
 	
 	/**
 	 * Scales the given double to a value between 0 and 1

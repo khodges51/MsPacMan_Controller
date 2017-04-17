@@ -1,6 +1,5 @@
 package pacman;
 
-import jGraph.Structure;
 import jNeatCommon.IOseq;
 
 import java.io.BufferedReader;
@@ -50,7 +49,7 @@ import static pacman.game.Constants.*;
  * 		   kuh1@aber.ac.uk
  */
 @SuppressWarnings("unused")
-public class Executor
+public class Executor 
 {	
 	//The number of input and output nodes the neural network should have
 	public static int netInputs = 24;
@@ -137,6 +136,7 @@ public class Executor
 			
 			//Loop for each organism in the population
 			for(int j = 0;j < evolution.getPopulationSize();j++){
+				//Find the organisms fitness
 				evolution.evaluateOrganism(j, numExperiments, numberOfLives, this);
 			}
 			

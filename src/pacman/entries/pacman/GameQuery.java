@@ -8,8 +8,8 @@ import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 
 /**
- * This class is used to query information about the game state. It acts as an extension to the Game class 
- * as a lot of the methods are similar to those you can find there.
+ * This class is used to query information about the game state. Its kind of like an extension to the Game
+ * class as the methods here are like those you can see there.
  * 
  * @author Kurt Hodges
  * 		   kuh1@aber.ac.uk
@@ -17,6 +17,7 @@ import pacman.game.Constants.MOVE;
  */
 public class GameQuery {
 	
+	//A copy of the current game
 	private Game game;
 	
 	//For the maximum number of X is 40 steps story, how many steps should we search.
@@ -37,9 +38,12 @@ public class GameQuery {
 	public boolean isXStepsAway(int currentIndex, int[] targetIndicies, int numSteps){
 		boolean isXStepsAway = false;
 		
+		//Find the closest target
 		int closestIndex = game.getClosestNodeIndexFromNodeIndex(currentIndex, targetIndicies, DM.PATH);
 		
+		//If there is a target
 		if( closestIndex != -1){
+			//Is it within the target distance?
 			if(game.getShortestPathDistance(currentIndex, closestIndex) <= numSteps){
 				isXStepsAway = true;
 			}
@@ -56,18 +60,24 @@ public class GameQuery {
 	 * false if the path to the nearest junction is clear.
 	 */
 	public boolean isNearestJunctionBlocked(int startIndex, MOVE direction){
-		double maxDistance = 200;
+		double maxDistance = 200; 
+		
+		//Find the nearest junction
 		int closestNode = game.getClosestNodeIndexFromNodeIndex_directional(startIndex, game.getJunctionIndices(), direction, maxDistance);
-		int[] pathToJunction;
 		
 		if(closestNode != -1){
-			pathToJunction = game.getShortestPath_absolute(startIndex, closestNode, direction);
+			boolean isBlocked = false;
 			
+			//Find a path to the nearest junction
+			int[] pathToJunction = game.getShortestPath_directional(startIndex, closestNode, direction);
+			
+			//Initialise the position of each ghost, remains a negative number if the ghost is edible
 			int pinkyIndex = -50000;
 			int blinkyIndex = -50000;
 			int inkyIndex = -50000;
 			int sueIndex = -50000;
 			
+			//Find the position of each non-edible ghost
 			if(!game.isGhostEdible(GHOST.PINKY))
 				pinkyIndex = game.getGhostCurrentNodeIndex(GHOST.PINKY);
 			if(!game.isGhostEdible(GHOST.BLINKY))
@@ -77,12 +87,10 @@ public class GameQuery {
 			if(!game.isGhostEdible(GHOST.SUE))
 				sueIndex = game.getGhostCurrentNodeIndex(GHOST.SUE);
 			
-			//Set input to default.....
-			boolean isBlocked = false;
-			
+			//Loop through the path
 			for(int i = 0; i < pathToJunction.length; i++){
+				//Check if this position is occupied by a ghost
 				if(pathToJunction[i] == pinkyIndex || pathToJunction[i] == sueIndex || pathToJunction[i] == blinkyIndex || pathToJunction[i] == inkyIndex){
-					//Path is blocked
 					isBlocked = true;
 				}
 			}
@@ -105,12 +113,16 @@ public class GameQuery {
 	 */
 	public double getDirectionalDistanceToNearest(MOVE direction, int searchStartIndex, int[] targetIndicies, double maxDistance){
 		double distance = maxDistance;
+		
+		//Find the closest target node
 		int closestNode = game.getClosestNodeIndexFromNodeIndex_directional(searchStartIndex, targetIndicies, direction, maxDistance);
 		
+		//If there is a match, find the distance to it
 		if(closestNode != -1){
-			distance = game.getShortestPathDistance_absolute(searchStartIndex, closestNode, direction);
+			distance = game.getShortestPathDistance_directional(searchStartIndex, closestNode, direction);
 		}
 		
+		//Return the distance to closest node if it is below the maximum distance
 		if(distance < maxDistance && distance >= 0){
 			return distance;
 		}else{
@@ -127,12 +139,11 @@ public class GameQuery {
 	 * @return The maximum number of matches found in 40 steps
 	 */
 	public double maxIn40Steps(MOVE direction, int startIndex, int[] targetNodeIndicies){
-		//Create a hashset to reduce search time to O(1);
-		HashSet<Integer> targetIndicies = new HashSet<Integer>();
-		
-		//Start at the nearest neighbour
+		//Start the search at the nearest neighbour
 		startIndex = game.getNeighbour(startIndex, direction);
 		
+		//Create a hashset to reduce search time to O(1);
+		HashSet<Integer> targetIndicies = new HashSet<Integer>();		
 		for(int i = 0; i < targetNodeIndicies.length; i++){
 			targetIndicies.add((Integer)targetNodeIndicies[i]);
 		}

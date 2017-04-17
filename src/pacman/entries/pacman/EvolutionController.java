@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
@@ -27,16 +26,18 @@ import jneat.Species;
  */
 public class EvolutionController {
 	
+	//The network population to evolve and evaluate
 	private Population networkPopulation;
+	//The populations size
 	private int popSize;
 	
 	//Track the best scoring network over the entire experiment
-	private double bestFitness = 0.0;
 	private Network bestNetwork;
+	private double bestFitness = 0.0;
 	
 	//Track the best scoring network over the current generation
-	private double bestFitnessThisGen = 0.0;
 	private Network bestNetworkThisGen;
+	private double bestFitnessThisGen = 0.0;
 	
 	/**
 	 * Creates a new population of networks.
@@ -103,6 +104,7 @@ public class EvolutionController {
 		   _specie.compute_max_fitness();
 		}
 		
+		//Evolve the population
 		networkPopulation.epoch(generation);
 		consoleOut_lastGen(networkPopulation, generation);
 		
@@ -170,12 +172,13 @@ public class EvolutionController {
 	/*
 	 * Returns a new population of networks with the specified number of input and 
 	 * output nodes. @size determines the size of the population
-	 * @author kuh1@aber.ac.uk
 	 */
 	private Population initialisePopulation(int size, int numInputs, int numOutputs){
 		Population population;
 		
+		//Create the genome to spawn the population from, has a node for each input and output
 		Genome startGenome = new Genome(1, numInputs, numOutputs, 0, numInputs + numOutputs, true, 0.8); 
+		//Create a population of randome variations of our simple start genome
 		population = new Population(startGenome, size);
 		
 		//OR use an alternate method to generate the population. This can cause the first generation to have more than the minimal amount of nodes
@@ -187,7 +190,6 @@ public class EvolutionController {
 	
 	/*
 	 * Output information about the last generation to the console
-	 * @author kuh1@aber.ac.uk
 	 */
 	private void consoleOut_lastGen(Population networkPopulation, int genNum){
 		System.out.println();

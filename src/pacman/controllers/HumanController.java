@@ -33,7 +33,7 @@ public class HumanController extends Controller<MOVE>
 	
 public KeyBoardInput input;
 		
-	private DataNormalizer dataNormalizer;
+	private Normalizer dataNormalizer;
 	private Color drawColor;
 	private Color directionalColors[] = {Color.red, Color.green, Color.yellow, Color.blue};
     private MOVE testDirection = MOVE.LEFT;
@@ -41,7 +41,7 @@ public KeyBoardInput input;
     public HumanController(KeyBoardInput input)
     {
     	this.input=input;
-    	dataNormalizer = new DataNormalizer();
+    	dataNormalizer = new Normalizer();
     }
     
     public KeyBoardInput getKeyboardInput()
@@ -335,7 +335,7 @@ public KeyBoardInput input;
 		int[] pathToJunction;
 		
 		if(closestNode != -1){
-			pathToJunction = game.getShortestPath_absolute(startIndex, closestNode, direction);
+			pathToJunction = game.getShortestPath_directional(startIndex, closestNode, direction);
 			
 			if(isDrawn){
 				GameView.addPoints(game,drawColor,pathToJunction);
@@ -440,10 +440,10 @@ public KeyBoardInput input;
 		int closestNode = game.getClosestNodeIndexFromNodeIndex_directional(searchStartIndex, targetIndicies, direction, maxDistance);
 		
 		if(closestNode != -1){
-			distance = game.getShortestPathDistance_absolute(searchStartIndex, closestNode, direction);
+			distance = game.getShortestPathDistance_directional(searchStartIndex, closestNode, direction);
 			if(doDraw){
 				//Draw for testing
-				GameView.addPoints(game,drawColor,game.getShortestPath_absolute(game.getPacmanCurrentNodeIndex(),closestNode, direction));
+				GameView.addPoints(game,drawColor,game.getShortestPath_directional(game.getPacmanCurrentNodeIndex(),closestNode, direction));
 			}
 		}
 		

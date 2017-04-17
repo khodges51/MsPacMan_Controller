@@ -722,6 +722,7 @@ public final class Game
 	 * Set the number of lives PacMan should have
 	 * @param numLives
 	 * @author Kurt Hodges
+	 * 		   kuh1@aber.ac.uk
 	 */
 	public void setPacManLives(int numLives)
 	{
@@ -1208,7 +1209,8 @@ public final class Game
 	 * 		The move to be checked
 	 * @return 
 	 * 		Is the move possible?
-	 * @author kuh1@aber.ac.uk
+	 * @author Kurt Hodges
+	 * 		   kuh1@aber.ac.uk
 	 */
 	public boolean isMovePossible(MOVE move){
 		MOVE[] possibleMoves = getPossibleMoves(getPacmanCurrentNodeIndex());
@@ -1424,7 +1426,7 @@ public final class Game
 			if(distance_manhattan < maxDistance){
 				
 				//Perform a A* path search and calculate path distance for this node
-				distance_directional=getShortestPathDistance_absolute(fromNodeIndex, targetNodeIndices[i], direction);
+				distance_directional=getShortestPathDistance_directional(fromNodeIndex, targetNodeIndices[i], direction);
 				
 				if(distance_directional<minDistance)
 				{
@@ -1716,7 +1718,7 @@ public final class Game
 	 * @return the shortest path from start to target
 	 * @author Modified by Kurt Hodges
 	 */
-	public int[] getShortestPath_absolute(int fromNodeIndex,int toNodeIndex,MOVE lastMoveMade)
+	public int[] getShortestPath_directional(int fromNodeIndex,int toNodeIndex,MOVE lastMoveMade)
 	{
 		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
 			return new int[0];
@@ -1772,7 +1774,7 @@ public final class Game
 	 * @return the exact distance of the path
 	 * @author Modified by Kurt Hodges
 	 */
-	public int getShortestPathDistance_absolute(int fromNodeIndex,int toNodeIndex,MOVE lastMoveMade)
+	public int getShortestPathDistance_directional(int fromNodeIndex,int toNodeIndex,MOVE lastMoveMade)
 	{
 		if(currentMaze.graph[fromNodeIndex].neighbourhood.size()==0)//lair
 			return 0;
