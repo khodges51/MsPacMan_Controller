@@ -36,7 +36,7 @@ public KeyBoardInput input;
 	private Normalizer dataNormalizer;
 	private Color drawColor;
 	private Color directionalColors[] = {Color.red, Color.green, Color.yellow, Color.blue};
-    private MOVE testDirection = MOVE.LEFT;
+    private MOVE testDirection = MOVE.RIGHT;
 	
     public HumanController(KeyBoardInput input)
     {
@@ -181,6 +181,14 @@ public KeyBoardInput input;
 		//System.out.println(networkInputs[startIndex + 2]);
 		//System.out.println();
 		
+		//TEST
+		int junk[] = game.getJunctionIndices();
+		for(int i = 0; i < junk.length; i++){
+			if(game.getPacmanCurrentNodeIndex() == junk[i]){
+				System.out.println("AT JUNCTION");
+			}
+		}
+		
 		return networkInputs;
 	}
 	 
@@ -257,9 +265,8 @@ public KeyBoardInput input;
 	 * Adds inputs concerning directional information about each ghost into the network. Ghosts are ordered from closest to farthest.
 	 */
 	private double[] getDirectionalGhostInfo(double[] networkInputs, int startIndex, MOVE direction, Game game){
-		int pacManIndex=game.getPacmanCurrentNodeIndex();
-		
-		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new GhostTrackerDirectionalComparator(direction));
+
+		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new DistanceComparator(direction));
 		for(GHOST ghost : GHOST.values()){
 			GhostTracker ghostTracker = new GhostTracker(ghost, game);
 			orderedGhosts.add(ghostTracker);
@@ -289,17 +296,17 @@ public KeyBoardInput input;
 			System.out.println(networkInputs[j]);
 			
 			//Is it edible?
-			networkInputs[j + 4] = dataNormalizer.normalizeBoolean(ghostTracker.isEdible());
+			//networkInputs[j + 4] = dataNormalizer.normalizeBoolean(ghostTracker.isEdible());
 			//System.out.print("Is edible?: ");
 			//System.out.println(networkInputs[j + 4]);
 			
 			//Does the path contain a junction?
-			networkInputs[j + 8] = dataNormalizer.normalizeBoolean(ghostTracker.doesPathContainJunction(direction));
+			//networkInputs[j + 8] = dataNormalizer.normalizeBoolean(ghostTracker.doesPathContainJunction(direction));
 			//System.out.print("Does path contain junction?: ");
 			//System.out.println(networkInputs[j + 8]);
 			
 			//Is the ghost approaching?
-			networkInputs[j + 12] = dataNormalizer.normalizeBoolean(ghostTracker.isGhostApproaching(direction, pacManIndex));
+			//networkInputs[j + 12] = dataNormalizer.normalizeBoolean(ghostTracker.isGhostApproaching(direction));
 			//System.out.print("Is approaching?: ");
 			//System.out.println(networkInputs[j + 12]);
 		}

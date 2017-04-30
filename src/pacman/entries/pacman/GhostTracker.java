@@ -49,6 +49,7 @@ public class GhostTracker{
 		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			
 			distance = game.getShortestPathDistance_directional(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
+			
 			//Only return the distance if it is less than the max distance
 			if(distance < maxDistance){
 				return distance;
@@ -56,6 +57,28 @@ public class GhostTracker{
 		}
 		
 		return maxDistance;
+	}
+	
+	/**
+	 * Gets the directional distance from Ms. Pac-Man to the ghost. This distance is the
+	 * path distance, I.E. if you travelled through the maze to reach the ghost. Returns
+	 * max distance to edible ghosts if isEdible = false, and returns max distance to non
+	 * -edible ghosts if isEdibe = true
+	 * @param direction The direction from Ms. Pac-Man's perspective
+	 * @param isEdible Are we searching for the distance to edible ghosts?
+	 * @return The distance between Ms. Pac-Man and the ghost if the ghost was to approach Ms. Pac-Man from 
+	 * that direction. 
+	 */
+	public double getDirectionalDistance(MOVE direction, boolean isEdible){
+		//If we are checking info about edible ghosts and the ghost is NOT edible
+		if(isEdible && game.getGhostEdibleTime(ghost) == 0){
+			return maxDistance;
+		//Else if we are checking info about a non-edible ghost and the ghost IS edible
+		}else if(!isEdible && game.getGhostEdibleTime(ghost) > 0){
+			return maxDistance;
+		}
+		
+		return getDirectionalDistance(direction);
 	}
 	
 	/**
@@ -70,7 +93,6 @@ public class GhostTracker{
 		if(game.getGhostLairTime(ghost)==0 && game.isMovePossible(direction)){
 			shortestPath = game.getShortestPath_directional(game.getPacmanCurrentNodeIndex(),game.getGhostCurrentNodeIndex(ghost), direction);
 		}else{
-			//If the ghost is in the lair return true by default
 			return true;
 		}
 		
@@ -92,10 +114,10 @@ public class GhostTracker{
 	 * @param pacManIndex The current location of Ms. Pac-Man
 	 * @return True if the ghost is approaching, false if not
 	 */
-	public boolean isGhostApproaching(MOVE direction, int pacManIndex){
+	public boolean isGhostApproaching(MOVE direction){
 		//Find the direction you would travel from Ms.Pac-Man to the ghost. This is probably the optimal path and so the direction
 		//of approach.
-		MOVE incomingDirection = game.getNextMoveTowardsTarget(pacManIndex, game.getGhostCurrentNodeIndex(ghost), DM.PATH);
+		MOVE incomingDirection = game.getNextMoveTowardsTarget(game.getPacmanCurrentNodeIndex(), game.getGhostCurrentNodeIndex(ghost), DM.PATH);
 		if(incomingDirection == direction && game.getGhostLairTime(ghost) == 0){
 			return true;
 		}else{

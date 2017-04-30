@@ -3,11 +3,15 @@ package pacman;
 import jNeatCommon.IOseq;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -33,6 +37,7 @@ import pacman.controllers.examples.RandomPacMan;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
 import pacman.entries.pacman.*;
+import pacman.entries.pacman.biased.MyPacManB;
 import pacman.game.Game;
 import pacman.game.GameView;
 import static pacman.game.Constants.*;
@@ -51,12 +56,15 @@ import static pacman.game.Constants.*;
 @SuppressWarnings("unused")
 public class Executor 
 {	
+	
 	//The number of input and output nodes the neural network should have
 	public static int netInputs = 24;
-	private static int netOutputs = 1;
+	private  int netOutputs = 1;
 	
-	//The amount of lives Ms. Pac-Man should start with during training
-	private int numberOfLives = 1;
+	//The controller to use for the ghosts
+	private Controller ghostController = new Legacy();
+	//Indicates the controller to use for Ms. Pac-Man
+	private String pacManControllerType = "A";
 	
 	/**
 	 * The main method. 
@@ -68,32 +76,117 @@ public class Executor
 	{
 		Executor exec=new Executor();
 		
-		//For testing, comment out when not needed. Runs a simulation with the modified human controlled class.
-		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(), true);
+		//Let the user choose which side of the program to use
+		Scanner scanner = new Scanner(System.in);
+		int choice = 0;
 		
-		/*
-		//Test feature, load a chosen file
-		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
-		Network theNet = evolution.loadNetwork("savedGenomes\\GenChamp134_3794");
-		System.out.println("Running a generation champion in a simulation");
-		exec.runGameTimed(new MyPacMan(theNet),new StarterGhosts(), true);
-		*/
-		/*
-		//Test feature, load the overall champ
-		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
-		Network theNet = evolution.loadNetwork("savedGenomes\\OverallChamp");
-		System.out.println("Running the overall champion in a simulation");
-		exec.runGameTimed(new MyPacMan(theNet),new StarterGhosts(), true);
-		*/
+		System.out.println("Enter 1 to evolve a Ms. Pac-Man controller");
+		System.out.println("Enter 2 to evaluate a saved Ms. Pac-Man controller");
+		System.out.println("Enter 3 to run a single simulation using a saved MS. Pac-Man controller");
+		choice = scanner.nextInt();
 		
-		exec.initialise();
+		switch (choice){
+			case 1: exec.evolveAPopulation();
+			 		break;
+			case 2: exec.evaluateNetwork();
+			 		break;	
+			case 3: exec.runSimulation();
+			 		break;
+			default: exec.evolveAPopulation();
+					 break;
+		}
 	}
 	
 	/*
-	 * Asks the user some details about the experiments they want to run and 
-	 * initialises the experiments. 
+	 * Allows the user to load a network from a file and watch it play in a game
 	 */
-	private void initialise(){
+	private void runSimulation(){
+		String fileName;
+		Scanner scanner = new Scanner(System.in);
+		
+		//Find the file name
+		System.out.println("Please input the name of the file");
+		fileName = scanner.nextLine();
+		System.out.println("Please input the type of controller('A' for original, 'B' for B type)");
+		pacManControllerType = scanner.nextLine();
+		pacManControllerType = pacManControllerType.toUpperCase();
+		
+		if(pacManControllerType.equals("B")){
+			System.out.println("Using B type controller");
+			netInputs = 28;
+		}else{
+			System.out.println("Using A type controller");
+			netInputs = 24; 
+		}
+		
+		//Load the network
+		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
+		Network theNet = evolution.loadNetwork(fileName);
+		
+		//Run a simulation
+		System.out.println("Running a generation champion in a simulation");
+		runGame(theNet, 3, true, 40);
+	}
+	
+	/*
+	 * Allows the user to load a network from a file and run X games to find average, min and max socre achieved 
+	 */
+	private void evaluateNetwork(){
+		String fileName;//= "savedGenomes\\OverallChamp"
+		Scanner scanner = new Scanner(System.in);
+		int numRuns = 0;
+		
+		//Ask the user for the details
+		System.out.println("Please input the name of the file");
+		fileName = scanner.nextLine();
+		System.out.println("Please input the type of controller('A' for original, 'B' for B type)");
+		pacManControllerType = scanner.nextLine();
+		pacManControllerType = pacManControllerType.toUpperCase();
+		System.out.println("Please the number of games to run: ");
+		numRuns = scanner.nextInt();
+		
+		if(pacManControllerType.equals("B")){
+			System.out.println("Using B type controller");
+			netInputs = 28;
+		}else{
+			System.out.println("Using A type controller");
+			netInputs = 24; 
+		}
+		
+		//Load the network
+		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
+		Network theNet = evolution.loadNetwork(fileName);
+		
+		//Run the games
+		double bestScore = 0;
+		double worstScore = 1000000;
+		double averageScore = 0;
+		for(int i = 0; i < numRuns; i++){
+			
+			//Note score and compare to find best and worst score overall
+			double score = runGame(theNet, 3, false, 0);
+			if(score > bestScore){
+				bestScore = score;
+			}else if(score < worstScore){
+				worstScore = score;
+			}
+			
+			averageScore += score;
+			
+			System.out.println("Game " + i + ", Score: " + score);
+		}
+		
+		//Output the results
+		System.out.println("Average score: " + averageScore / numRuns);
+		System.out.println("Highest score: " + bestScore);
+		System.out.println("Lowest score: " + worstScore);
+	}
+	
+	/*
+	 * Allows the user to evolve a controller. 
+	 * Asks the user some details about the experiments they want to run and initialises the experiments. 
+	 */
+	private void evolveAPopulation(){
 		Scanner scanner = new Scanner(System.in);
 		
 		//Ask the user how big the population should be
@@ -108,16 +201,62 @@ public class Executor
 		System.out.println("Please input the number of generations to evolve: ");
 		numGenerations = scanner.nextInt();
 		System.out.println("Please input the number of experiments to run per evaluation: ");
-		numExperiments = scanner.nextInt();
+		numExperiments = scanner.nextInt(); scanner.nextLine();
+		System.out.println("Please input the type of controller you'd like to evolve ('A' for original, 'B' for B type)");
+		pacManControllerType = scanner.nextLine();
+		pacManControllerType = pacManControllerType.toUpperCase();
 		
+		//Set the number of inputs
+		if(pacManControllerType.equals("B")){
+			System.out.println("Using B type controller");
+			netInputs = 28;
+		}else{
+			System.out.println("Using A type controller");
+			netInputs = 24; 
+		}
+		
+		//Create a population and evolve it over the chosen number of generations
+		createExperimentLog(numExperiments, popSize);
 		EvolutionController evolution = new EvolutionController(popSize, netInputs, netOutputs);
-
-		runExperiment(evolution, 0, numGenerations, numExperiments);
-		
+		runExperiment(evolution, 0, numGenerations, numExperiments); 
+		 
 		//Run the best network to show final controller performance visually
 		if(evolution.getBestNetwork() != null){
 			System.out.println("Running simulation with the best scoring network");
-			runGameTimed(new MyPacMan(evolution.getBestNetwork()),new StarterGhosts(), true);
+			runGame(evolution.getBestNetwork(), 3, true, 40);
+		}
+	}
+	
+	/*
+	 * Create the experiment log, stores details and scores achieved during population evolution
+	 */
+	private void createExperimentLog(int numExperiments, int popSize){
+		FileWriter writer;
+		try {
+			//Create the file, overwriting any existing file
+			File theFile = new File ("savedGenomes\\experimentLog.txt");
+			writer = new FileWriter(theFile, false);
+			
+			//Write the details of the experiment
+			writer.write("Experiment with controller type: " + pacManControllerType + "\n");
+			writer.write("Population size: " + popSize + "\n");
+			writer.write("Number of runs per evaluation: " + numExperiments + "\n");
+			writer.write("Add node chance: " + Neat.p_mutate_add_node_prob + "\n");
+			writer.write("Add link chance: " + Neat.p_mutate_add_link_prob + "\n");
+			writer.write("Species compatability threshold: " + Neat.p_compat_threshold + "\n");
+			
+			//Close the file
+			writer.flush();
+		    writer.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
@@ -137,7 +276,7 @@ public class Executor
 			//Loop for each organism in the population
 			for(int j = 0;j < evolution.getPopulationSize();j++){
 				//Find the organisms fitness
-				evolution.evaluateOrganism(j, numExperiments, numberOfLives, this);
+				evolution.evaluateOrganism(j, numExperiments, this);
 			}
 			
 			//Evolve the population
@@ -160,6 +299,28 @@ public class Executor
 	}
 	
 	/**
+	 * Runs a game using the given network to initialise the controller
+	 * @param network The brain of the controller
+	 * @param numLives The starting number of lives Ms. Pac-Man should have
+	 * @param visual Indicates whether or not to use visuals
+	 * @param delay The delay between time-steps
+	 * @return the score achieved
+	 * @author kuh1@aber.ac.uk 
+	 */
+	public double runGame(Network network, int numLives, boolean visual, int delay){
+		PacManController pacManController;
+		
+		//Make sure to create the right controller based on user input
+		if(pacManControllerType.equals("B")){
+			pacManController = new MyPacManB(network, netInputs);
+		}else{
+			pacManController = new MyPacMan(network, netInputs);
+		}
+		
+		return runGame(pacManController, numLives, ghostController, visual, delay);
+	}
+	
+	/**
 	 * Run a game in asynchronous mode: the game waits until a move is returned. In order to slow thing down in case
 	 * the controllers return very quickly, a time limit can be used. If fasted gameplay is required, this delay
 	 * should be put as 0.
@@ -168,6 +329,7 @@ public class Executor
 	 * @param ghostController The Ghosts controller
 	 * @param visual Indicates whether or not to use visuals
 	 * @param delay The delay between time-steps
+	 * @return the score achieved
 	 */
 	public double runGame(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual,int delay)
 	{

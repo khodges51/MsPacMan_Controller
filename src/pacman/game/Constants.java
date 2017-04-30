@@ -26,7 +26,12 @@ public final class Constants
 		
 		public abstract MOVE opposite();
 		
-		//Return the move at the given index, as if the enum was an array
+		/**
+		 * Return the move at the given index, as if the enum was an array
+		 * @param index The numerical index of this MOVE. 0, 1, 2 and 3 for UP, RIGHT, DOWN and LEFT
+		 * @return A MOVE that corresponds to its index
+		 * @author Kurt Hodges
+		 */
 		public static MOVE getByIndex(int index){
 			switch(index) {
 				case 0: return UP;
