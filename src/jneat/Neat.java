@@ -49,11 +49,11 @@
    
    /** threshold under which two Genomes are the same species */
 	  public static double p_compat_threshold 
-	  =4.0;
+	  =2.0;
    
    /** How much does age matter in epoch cycle */
 	  public static double p_age_significance 
-	  = 1.05;
+	  = 1.025;
    
    /** Percent of ave fitness for survival */
 	  public static double p_survival_thresh
@@ -77,7 +77,7 @@
    
    /** Probability  of mutate link weight */
 	  public static double p_mutate_link_weights_prob
-	  =0.80;
+	  =0.90;
    
    /** Probability  of mutate status ena->dis | dis-ena of gene */
 	  public static double p_mutate_toggle_enable_prob
@@ -89,15 +89,15 @@
    
    /** Probability  of add a node to struct of genome */
 	  public static double p_mutate_add_node_prob
-	  =0.01;
+	  =0.03;
    
    /** Probability  of add a link to struct of genome */
 	  public static double p_mutate_add_link_prob
-	  =0.1;
+	  =0.2;
    
    /** Probability  of a mate being outside species */
 	  public static double p_interspecies_mate_rate
-	  =0.005;
+	  =0.05;
    
    /** Probability  of cross in a many point of two genome */
 	  public static double p_mate_multipoint_prob
@@ -125,7 +125,7 @@
    
    /** Age where Species starts to be penalized */
 	  public static int p_dropoff_age 
-	  = 30; 
+	  = 50; 
 	  
    
    /** Number of tries mutate_add_link will attempt to find an open link */
@@ -138,7 +138,7 @@
    
    /** The number of babies to siphen off to the champions */
 	  public static int p_babies_stolen
-	  =1;
+	  =2;
    
    /** The number of runs for an experiment */
 	  public static int p_num_runs

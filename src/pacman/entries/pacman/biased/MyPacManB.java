@@ -1,4 +1,4 @@
-package pacman.entries.pacman;
+package pacman.entries.pacman.biased;
 
 import static pacman.game.Constants.EDIBLE_TIME;
 import static pacman.game.Constants.EDIBLE_TIME_REDUCTION;
@@ -8,20 +8,26 @@ import java.util.PriorityQueue;
 
 import pacman.Executor;
 import pacman.controllers.Controller;
+import pacman.entries.pacman.GameQuery;
+import pacman.entries.pacman.GhostTracker;
+import pacman.entries.pacman.Normalizer;
+import pacman.entries.pacman.PacManController;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 import jneat.*;
 
 /**
- * This implementation gathers all of the inputs from the original stories. This info is into a neural network for
- * each possible direction of travel, and evaluate the output to determine which direction is most suitable. This class 
- * will contain implementations of only the most basic inputs, using the GameQuery class for finding the remaining inputs.
+ *
+ * This implementation gathers all of the inputs from the original stories, except it considers the edible and non edible 
+ * ghosts seperately. This info is into a neural network for each possible direction of travel, and evaluate the output to 
+ * determine which direction is most suitable. This class will contain implementations of only the most basic inputs, using 
+ * the GameQuery class for finding the remaining inputs.
  * 
  * @author Kurt Hodges
  *		   kuh1@aber.ac.uk
  */
-public class MyPacMan extends PacManController
+public class MyPacManB extends PacManController
 {
 	//Used to scale data so it can be input into the ANN
 	private Normalizer dataNormalizer;
@@ -33,14 +39,14 @@ public class MyPacMan extends PacManController
 	 * @param network The neural network that the controller will use to make decisions
 	 * @param numberOfInputs The number of inputs the networks has
 	 */
-	public MyPacMan(Network network, int numberOfInputs){
+	public MyPacManB(Network network, int numberOfInputs){
 		super(network, numberOfInputs);
 		dataNormalizer = new Normalizer();
 	}
 	
 	/**
 	 * {@inheritDoc}
-	 * || Returns all of the constant inputs from the original stories
+	 *  || Returns all of the constant inputs from the original stories
 	 */
 	public double[] getConstantInputs(double[] networkInputs, int startIndex, Game game){
 		GameQuery gameQuery = new GameQuery(game);
@@ -66,7 +72,8 @@ public class MyPacMan extends PacManController
 	
 	/**
 	 * {@inheritDoc}
-	 * || Returns all of the directional inputs from the original stories
+	 * || Returns all of the directional inputs from the original stories, except ghost information is split into
+	 * edible and non-edible
 	 */
 	public double[] getDirectionalInputs(double[] networkInputs, int startIndex, MOVE direction, Game game){
 		GameQuery gameQuery = new GameQuery(game);
@@ -103,15 +110,14 @@ public class MyPacMan extends PacManController
 	}
 	
 	/*
-	 * Adds inputs concerning information about all of the ghost into the network
+	 * Adds inputs concerning information about all of the ghost into the network,
 	 */
 	private double[] getConstantGhostInfo(double[] networkInputs, int startIndex, Game game){
+		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
 		double currentEdibleTime = 0.0;
 		double numberOfEdibleGhosts = 0;
-		double maximumEdibleTime=EDIBLE_TIME*(Math.pow(EDIBLE_TIME_REDUCTION,game.getCurrentLevel()%LEVEL_RESET_REDUCTION));
 		
 		for(GHOST ghost : GHOST.values()){
-			//If this ghost is currently edible
 			if(game.getGhostEdibleTime(ghost) > 0){
 				numberOfEdibleGhosts++;
 				currentEdibleTime = game.getGhostEdibleTime(ghost);
@@ -137,11 +143,14 @@ public class MyPacMan extends PacManController
 	}
 	
 	/*
-	 * Adds inputs concerning directional information about each ghost into the network. Ghosts are ordered from closest to farthest.
+	 * Adds inputs concerning directional information about each ghost into the network. 
+	 * edible and non-edible ghosts are consider seperatley. Ghosts are ordered from closest to farthest.
 	 */
 	private double[] getDirectionalGhostInfo(double[] networkInputs, int startIndex, MOVE direction, Game game){
-		//Sort each ghost by directional distance
-		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new DistanceComparator(direction));
+		int pacManIndex=game.getPacmanCurrentNodeIndex();
+		
+		//Sort each non edible ghost by directional distance
+		PriorityQueue<GhostTracker> orderedGhosts = new PriorityQueue<GhostTracker>(4, new DistanceComparatorB(direction, false));
 		for(GHOST ghost : GHOST.values()){
 			GhostTracker ghostTracker = new GhostTracker(ghost, game);
 			orderedGhosts.add(ghostTracker);
@@ -150,10 +159,22 @@ public class MyPacMan extends PacManController
 		//Loop through the ghosts from closest to farthest 
 		for(int j = startIndex; j < startIndex + 4; j++){
 			GhostTracker ghostTracker = orderedGhosts.poll();
-			networkInputs[j] = dataNormalizer.normalizeDouble(ghostTracker.getDirectionalDistance(direction), 200);
-			networkInputs[j + 4] = dataNormalizer.normalizeBoolean(ghostTracker.isEdible());
-			networkInputs[j + 8] = dataNormalizer.normalizeBoolean(ghostTracker.doesPathContainJunction(direction));
-			//networkInputs[j + 12] = dataNormalizer.normalizeBoolean(ghostTracker.isGhostApproaching(direction));
+			networkInputs[j] = dataNormalizer.normalizeDouble(ghostTracker.getDirectionalDistance(direction, false), 200);
+			networkInputs[j + 4] = dataNormalizer.normalizeBoolean(ghostTracker.doesPathContainJunction(direction));
+		}
+		
+		//Sort each edible ghost by directional distance
+		orderedGhosts = new PriorityQueue<GhostTracker>(4, new DistanceComparatorB(direction, true));
+		for(GHOST ghost : GHOST.values()){
+			GhostTracker ghostTracker = new GhostTracker(ghost, game);
+			orderedGhosts.add(ghostTracker);
+		}
+		
+		//Loop through the ghosts from closest to farthest 
+		for(int j = startIndex + 8; j < startIndex + 12; j++){
+			GhostTracker ghostTracker = orderedGhosts.poll();
+			networkInputs[j] = dataNormalizer.normalizeDouble(ghostTracker.getDirectionalDistance(direction, true), 200);
+			networkInputs[j + 4] = dataNormalizer.normalizeBoolean(ghostTracker.doesPathContainJunction(direction));
 		}
 		
 		return networkInputs;

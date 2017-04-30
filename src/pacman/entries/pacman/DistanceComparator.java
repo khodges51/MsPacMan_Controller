@@ -14,7 +14,7 @@ import pacman.game.Constants.MOVE;
  * 
  *
  */
-public class GhostTrackerDirectionalComparator implements Comparator<GhostTracker>{
+public class DistanceComparator implements Comparator<GhostTracker>{
 	
 	MOVE direction;
 	
@@ -22,7 +22,7 @@ public class GhostTrackerDirectionalComparator implements Comparator<GhostTracke
 	 * Creates a new comparator for ghost trackers
 	 * @param theDirection Compares GhostTrackers based on the distance to each tracker's ghost in this direction
 	 */
-	public GhostTrackerDirectionalComparator(MOVE theDirection){
+	public DistanceComparator(MOVE theDirection){
 		direction = theDirection;
 	}
 	

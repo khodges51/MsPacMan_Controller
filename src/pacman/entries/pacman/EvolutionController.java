@@ -58,17 +58,18 @@ public class EvolutionController {
 	 * @param numberOfLives The number of lives Ms.Pac-Man should have
 	 * @param executor The executor class to run the games from
 	 */
-	public void evaluateOrganism(int organismIndex, int numExperiments, int numberOfLives,  Executor executor){
+	public void evaluateOrganism(int organismIndex, int numExperiments, Executor executor){
 		Organism organism = getOrganism(organismIndex);
 		//Extract the neural network from the population, ready for evaluation
 		Network brain = organism.getNet();
 		
-		int scoreTotal = 0;
 		//Loop for each experiment
+		int scoreTotal = 0;
 		for(int w = 0; w<numExperiments; w++){
-			double lastScore = executor.runGame(new MyPacMan(brain), numberOfLives, new StarterGhosts(), false, 0);
+			double lastScore = executor.runGame(brain, 1, false, 0);
 			scoreTotal += lastScore;
 		}
+		//Average score for fitness
 		organism.setFitness(scoreTotal/numExperiments);
 		organism.setError(60000.0 - (scoreTotal/numExperiments));
 		
@@ -182,7 +183,7 @@ public class EvolutionController {
 		population = new Population(startGenome, size);
 		
 		//OR use an alternate method to generate the population. This can cause the first generation to have more than the minimal amount of nodes
-		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 0.8);
+		//population = new Population(size, numInputs, numOutputs, numInputs + numOutputs, true, 0.95);
 		
 		population.verify();
 		return population;
