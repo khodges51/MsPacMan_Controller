@@ -49,7 +49,7 @@
    
    /** threshold under which two Genomes are the same species */
 	  public static double p_compat_threshold 
-	  =2.0;
+	  =3.0;
    
    /** How much does age matter in epoch cycle */
 	  public static double p_age_significance 
@@ -61,7 +61,7 @@
    
    /** Probability  of a non-mating reproduction */
 	  public static double p_mutate_only_prob
-	  =0.3;
+	  =0.25;
    
    /** Probability  of mutate trait */
 	  public static double p_mutate_random_trait_prob
@@ -89,15 +89,15 @@
    
    /** Probability  of add a node to struct of genome */
 	  public static double p_mutate_add_node_prob
-	  =0.03;
+	  =0.02;
    
    /** Probability  of add a link to struct of genome */
 	  public static double p_mutate_add_link_prob
-	  =0.2;
+	  =0.3;
    
    /** Probability  of a mate being outside species */
 	  public static double p_interspecies_mate_rate
-	  =0.05;
+	  =0.01;
    
    /** Probability  of cross in a many point of two genome */
 	  public static double p_mate_multipoint_prob

@@ -169,7 +169,7 @@
 		 organisms = new Vector(size);
 		 for (count = 1; count <= size; count++) 
 		 {
-		 //	  System.out.print("\n Creating organism -> " + count);
+		 //	  //System.out.print("\n Creating organism -> " + count);
 			newgenome = g.duplicate(count);
 			newgenome.mutate_link_weight(1.0, 1.0, NeatConstant.GAUSSIAN);
 			neworganism = new Organism(0.0, newgenome, 1);
@@ -192,9 +192,9 @@
 	   public void viewtext() 
 	  {
 	  
-		 System.out.print("\n\n\n\t\t *P O P U L A T I O N*");
-		 System.out.print("\n\n\t This population has " + organisms.size() + " organisms, "); 
-		 System.out.print(species.size() + " species :\n");
+		 //System.out.print("\n\n\n\t\t *P O P U L A T I O N*");
+		 //System.out.print("\n\n\t This population has " + organisms.size() + " organisms, "); 
+		 //System.out.print(species.size() + " species :\n");
 		 Iterator itr_organism = organisms.iterator();
 		 itr_organism = organisms.iterator();
 	  
@@ -339,8 +339,8 @@
 		 //an average we can use to assign offspring.
 			if (final_expected < total_organisms) 
 			{
-			   System.out.print("\n Sorry : Population .has DIED +");
-			   System.out.print("\n ------------------------------");
+			   ////System.out.print("\n Sorry : Population .has DIED +");
+			   ////System.out.print("\n ------------------------------");
 			   itr_specie = species.iterator();
 			   while (itr_specie.hasNext()) 
 			   {
@@ -375,7 +375,7 @@
 	  
 	  
 		 StringBuffer rep1 = new StringBuffer("");
-	     	System.out.print("\n  The BEST specie is #" + best_species_num);
+	     	////System.out.print("\n  The BEST specie is #" + best_species_num);
 		 rep1.append("\n  the BEST  specie is #" + best_species_num);
 	  
 	  
@@ -386,22 +386,22 @@
 		 while (itr_specie.hasNext()) 
 		 {
 			_specie = ((Species) itr_specie.next());
-		 	  	System.out.print("\n  orig fitness of Species #" + _specie.id);
+		 	  	////System.out.print("\n  orig fitness of Species #" + _specie.id);
 			rep1.append("\n  orig fitness of Species #" + _specie.id);
 		 
-		   	System.out.print(" (Size " + _specie.getOrganisms().size() + "): ");
+		   	////System.out.print(" (Size " + _specie.getOrganisms().size() + "): ");
 			rep1.append(" (Size " + _specie.getOrganisms().size() + "): ");
 		 
-		 	  	System.out.print(" is " + ((Organism) (_specie.organisms.firstElement())).orig_fitness); 
+		 	  	////System.out.print(" is " + ((Organism) (_specie.organisms.firstElement())).orig_fitness); 
 			rep1.append(" is " + ((Organism) (_specie.organisms.firstElement())).orig_fitness); 
 		 
-		  	  	System.out.print(" last improved ");
+		  	  	////System.out.print(" last improved ");
 			rep1.append(" last improved ");
 		 
-		 	  	System.out.print(_specie.age - _specie.age_of_last_improvement);
+		 	  	//System.out.print(_specie.age - _specie.age_of_last_improvement);
 			rep1.append(_specie.age - _specie.age_of_last_improvement);
 		 
-		   	System.out.print(" offspring "+_specie.expected_offspring);
+		   	//System.out.print(" offspring "+_specie.expected_offspring);
 			rep1.append(" offspring "+_specie.expected_offspring);
 		 
 		 }
@@ -427,7 +427,7 @@
 		 {
 			highest_fitness = ((Organism) curspecies.organisms.firstElement()).orig_fitness; 
 			highest_last_changed = 0;
-		 	  	System.out.print("\n    Good! Population has reached a new *RECORD FITNESS* -> " + highest_fitness);
+		 	  	//System.out.print("\n    Good! Population has reached a new *RECORD FITNESS* -> " + highest_fitness);
 			rep1.append("\n    population has reached a new *RECORD FITNESS* -> " + highest_fitness);
 
 
@@ -447,7 +447,7 @@
 			++highest_last_changed;
 			EnvConstant.REPORT_SPECIES_TESTA = "";
 		 
-		 	  	System.out.print("\n  Are passed "+ highest_last_changed+ " generations from last population fitness record: "+ highest_fitness); 
+		 	  	//System.out.print("\n  Are passed "+ highest_last_changed+ " generations from last population fitness record: "+ highest_fitness); 
 			rep1.append("\n    are passed "+ highest_last_changed+ " generations from last population fitness record: "+ highest_fitness); 
 		 }
 	  
@@ -460,12 +460,12 @@
 		 if (highest_last_changed >= Neat.p_dropoff_age + 5) 
 		 {
 		 //------------------ block delta coding ---------------------------- 
-			System.out.print("\n+  <PERFORMING DELTA CODING>");
+			//System.out.print("\n+  <PERFORMING DELTA CODING>");
 			highest_last_changed = 0;
 			half_pop = Neat.p_pop_size / 2;
 			tmpi = Neat.p_pop_size - half_pop;
-			System.out.print("\n  Pop size is " + Neat.p_pop_size);
-			System.out.print(", half_pop=" + half_pop + ",   pop_size - halfpop=" + tmpi);
+			//System.out.print("\n  Pop size is " + Neat.p_pop_size);
+			//System.out.print(", half_pop=" + half_pop + ",   pop_size - halfpop=" + tmpi);
 		 
 			itr_specie = sorted_species.iterator();
 			_specie = ((Species) itr_specie.next());
@@ -500,7 +500,7 @@
 		 else
 		 {
 		 // --------------------------------- block baby stolen (if baby stolen > 0)  -------------------------
-		 //		System.out.print("\n   Starting with NUM_STOLEN = "+NUM_STOLEN);
+		 //		//System.out.print("\n   Starting with NUM_STOLEN = "+NUM_STOLEN);
 		 
 			if (Neat.p_babies_stolen > 0) 
 			{
@@ -510,10 +510,10 @@
 			   for (int j = sorted_species.size() - 1; (j >= 0) && (stolen_babies < NUM_STOLEN); j--) 
 			   {
 				  _specie = (Species) sorted_species.elementAt(j);
-			   //				System.out.print("\n Analisis SPECIE #"+j+" (size = "+_specie.organisms.size()+" )");
+			   //				//System.out.print("\n Analisis SPECIE #"+j+" (size = "+_specie.organisms.size()+" )");
 				  if ((_specie.age > 5) && (_specie.expected_offspring > 2)) 
 				  {
-				  //		System.out.print("\n ....STEALING!");
+				  //		//System.out.print("\n ....STEALING!");
 					 tmpi = NUM_STOLEN - stolen_babies;
 					 if ((_specie.expected_offspring - 1) >= tmpi) 
 					 {
@@ -532,7 +532,7 @@
 			
 			
 			
-			//		 	System.out.print("\n stolen babies = "+ stolen_babies);
+			//		 	//System.out.print("\n stolen babies = "+ stolen_babies);
 			//Mark the best champions of the top species to be the super champs
 			//who will take on the extra offspring for cloning or mutant cloning
 			//Determine the exact number that will be given to the top three
@@ -561,7 +561,7 @@
 						   ((Organism) _specie.organisms.firstElement()).super_champ_offspring = tb_four[i_block]; 
 						   _specie.expected_offspring += tb_four[i_block];
 						   stolen_babies -= tb_four[i_block];
-						   System.out.print("\n  give "+tb_four[i_block]+" babies to specie #" +_specie.id); 
+						   //System.out.print("\n  give "+tb_four[i_block]+" babies to specie #" +_specie.id); 
 						}
 						i_block++;
 					 }
@@ -576,13 +576,13 @@
 							  ((Organism) _specie.organisms.firstElement()).super_champ_offspring = 3;
 							  _specie.expected_offspring += 3;
 							  stolen_babies -= 3;
-							  System.out.print("\n    Give 3 babies to Species " + _specie.id);
+							  //System.out.print("\n    Give 3 babies to Species " + _specie.id);
 						   } 
 						   else 
 						   {
 							  ((Organism) _specie.organisms.firstElement()).super_champ_offspring = stolen_babies; 
 							  _specie.expected_offspring += stolen_babies;
-							  System.out.print("\n    Give "+stolen_babies+" babies to Species " + _specie.id);
+							  //System.out.print("\n    Give "+stolen_babies+" babies to Species " + _specie.id);
 							  stolen_babies = 0;
 						   }
 						}
@@ -594,12 +594,12 @@
 			
 			   if (stolen_babies > 0) 
 			   {
-				  System.out.print("\n Not all given back, giving to best Species");
+				  //System.out.print("\n Not all given back, giving to best Species");
 				  itr_specie = sorted_species.iterator();
 				  _specie = ((Species) itr_specie.next());
 				  ((Organism) _specie.organisms.firstElement()).super_champ_offspring += stolen_babies; 
 				  _specie.expected_offspring += stolen_babies;
-				  System.out.print("\n    force +" + stolen_babies+" offspring to Species " + _specie.id);
+				  //System.out.print("\n    force +" + stolen_babies+" offspring to Species " + _specie.id);
 				  stolen_babies = 0;
 			   }
 			} // end baby_stolen > 0
@@ -635,26 +635,26 @@
 	  
 	  
 	  // ---------- phase of reproduction -----------
-	  	 System.out.print("\n ---- Reproduction at time " + generation+" ----");
-	  System.out.print("\n    species   : "+ sorted_species.size());
-	  System.out.print("\n    organisms : "+ organisms.size());
-	  System.out.print("\n    cur innov num : "+cur_innov_num);
-	  System.out.print("\n    cur node num  : "+cur_node_id);
-	  System.out.print("\n ---------------------------------------------");
-	  System.out.print("\n Start reproduction of species ....");
+	  	 //System.out.print("\n ---- Reproduction at time " + generation+" ----");
+	  //System.out.print("\n    species   : "+ sorted_species.size());
+	  //System.out.print("\n    organisms : "+ organisms.size());
+	  //System.out.print("\n    cur innov num : "+cur_innov_num);
+	  //System.out.print("\n    cur node num  : "+cur_node_id);
+	  //System.out.print("\n ---------------------------------------------");
+	  //System.out.print("\n Start reproduction of species ....");
 	     	
 		 boolean rc = false;
 	  
 		 itr_specie = sorted_species.iterator();
-	   System.out.print("\n verifica");
-	   System.out.print("\n this species has "+sorted_species.size()+" elements");
+	   //System.out.print("\n verifica");
+	   //System.out.print("\n this species has "+sorted_species.size()+" elements");
 		 while (itr_specie.hasNext()) 
 		 {
 			_specie = ((Species) itr_specie.next());
 			rc = _specie.reproduce(generation, this, sorted_species);
 		 }
 	  
-	 System.out.print("\n Reproduction completed");
+	 //System.out.print("\n Reproduction completed");
 	  
 	  
 	  
@@ -751,7 +751,7 @@
 			}
 		 }
 	  
-	  System.out.print("\n the number of species can be eliminated is "+vdel.size());
+	  //System.out.print("\n the number of species can be eliminated is "+vdel.size());
 	  //eliminate species marked from master list
 		 for (int i = 0; i < vdel.size(); i++) 
 		 {
@@ -816,12 +816,12 @@
 			Organism _organism = ((Organism) itr_organism.next());
 			if (_organism.pop_champ_child) 
 			{
-					 	System.out.print("\n At end of reproduction cycle, the child of the pop champ is: "); 
+					 	//System.out.print("\n At end of reproduction cycle, the child of the pop champ is: "); 
 			   break;
 			}
 		 }
 	  
-	    	System.out.print("\n Epoch complete");
+	    	//System.out.print("\n Epoch complete");
 	  
 	  }
    
@@ -983,7 +983,7 @@
 		 int count;
 		 Genome new_genome = null;
 	  
-//		 System.out.print("\n  -Making a random population of "+size+" organisms ");
+//		 //System.out.print("\n  -Making a random population of "+size+" organisms ");
 	  
 		 winnergen=0;
 		 highest_fitness=0.0;
@@ -1006,8 +1006,8 @@
 		 cur_node_id = i + o + nmax + 1;;
 		 cur_innov_num = ( i + o + nmax) * (i + o + nmax) + 1;
 	  
-//		 System.out.print("\n  The first  node_id  available is "+cur_node_id);
-//		 System.out.print("\n  The first innov_num available is "+cur_innov_num);
+//		 //System.out.print("\n  The first  node_id  available is "+cur_node_id);
+//		 //System.out.print("\n  The first innov_num available is "+cur_innov_num);
 	  
 		 speciate();
 	  
@@ -1055,7 +1055,7 @@
 			try 
 			{
 			
-			//   System.out.println("  ..opened population file "+xFileName);
+			//   //System.out.println("  ..opened population file "+xFileName);
 			
 			   xline = xFile.IOseqRead();
 			
@@ -1099,12 +1099,12 @@
 					 while (!curword.equals("*/")) 
 					 {
 		//				tmp1.append(" "+curword);
-		//			 			  		System.out.print(" " + curword);
+		//			 			  		//System.out.print(" " + curword);
 						curword = st.nextToken();
 					 }
-//				  				System.out.print("\n");
+//				  				//System.out.print("\n");
 				/*	 tmp2.append(" "+tmp1);
-				  	System.out.print("\n tmp2 = "+tmp2);*/
+				  	//System.out.print("\n tmp2 = "+tmp2);*/
 				  
 				  }
 			   
@@ -1117,7 +1117,7 @@
 			   }
 		 
 			xFile.IOseqCloseR();
-			//System.out.println("\n  ok readed!");
+			////System.out.println("\n  ok readed!");
 		 
 			speciate();
 		 
@@ -1228,7 +1228,7 @@
 			try 
 			{
 			
-			   System.out.println("  ..opened population file "+xFileName);
+			   //System.out.println("  ..opened population file "+xFileName);
 			
 			   xline = xFile.IOseqRead();
 			
@@ -1268,7 +1268,7 @@
 					  
 					 if (xline.indexOf("WINNER") >= 0)
 					 {
-					 //	                System.out.print("\n found a winner genome" + xline);
+					 //	                //System.out.print("\n found a winner genome" + xline);
 						xok = true;
 					 }
 					 if (status == 0)
@@ -1281,18 +1281,18 @@
 					 } 
 
 
-//					 System.out.print("\n passo de qui");
+//					 //System.out.print("\n passo de qui");
 					 curword = st.nextToken();
 		//			 tmp1 = new StringBuffer("");
 					 while (!curword.equals("*/")) 
 					 {
 				//		tmp1.append(" "+curword);
-			//		 			  		System.out.print(" " + curword);
+			//		 			  		//System.out.print(" " + curword);
 						curword = st.nextToken();
 					 }
-				 /* 				System.out.print("\n");
+				 /* 				//System.out.print("\n");
 					 tmp2.append(" "+tmp1);
-				  	System.out.print("\n tmp2 = "+tmp2);*/
+				  	//System.out.print("\n tmp2 = "+tmp2);*/
 				  
 				  }
 			   
@@ -1305,7 +1305,7 @@
 			   }
 		 
 			xFile.IOseqCloseR();
-			System.out.println("\n  ok readed!");
+			//System.out.println("\n  ok readed!");
 			speciate();
 		 
 		 }

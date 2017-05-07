@@ -179,7 +179,7 @@
 			if (age_debt >= 1) 
 			{
 			   _organism.fitness = _organism.fitness * 0.01;
-			//		 	System.out.print("\n dropped fitness to " + _organism.fitness);
+			//		 	//System.out.print("\n dropped fitness to " + _organism.fitness);
 			}
 		 //Give a fitness boost up to some young age (niching)
 		 //The age_significance parameter is a system parameter
@@ -355,16 +355,16 @@
 	   public void viewtext() 
 	  {
 	  
-		 System.out.println("\n +SPECIES : ");
-		 System.out.print("  id < " + id + " >");
-		 System.out.print(" age=" + age);
-		 System.out.print(", ave_fitness=" + ave_fitness);
-		 System.out.print(", max_fitness=" + max_fitness);
-		 System.out.print(", max_fitness_ever =" + max_fitness_ever);
-		 System.out.print(", expected_offspring=" + expected_offspring);
-		 System.out.print(", age_of_last_improvement=" + age_of_last_improvement);
-		 System.out.print("\n  This Species has " + organisms.size() + " organisms :");
-		 System.out.print("\n ---------------------------------------");
+		 ////System.out.println("\n +SPECIES : ");
+		 //System.out.print("  id < " + id + " >");
+		 //System.out.print(" age=" + age);
+		 //System.out.print(", ave_fitness=" + ave_fitness);
+		 //System.out.print(", max_fitness=" + max_fitness);
+		 //System.out.print(", max_fitness_ever =" + max_fitness_ever);
+		 //System.out.print(", expected_offspring=" + expected_offspring);
+		 //System.out.print(", age_of_last_improvement=" + age_of_last_improvement);
+		 //System.out.print("\n  This Species has " + organisms.size() + " organisms :");
+		 //System.out.print("\n ---------------------------------------");
 	  
 		 Iterator itr_organism = organisms.iterator();
 		 itr_organism = organisms.iterator();
@@ -456,7 +456,7 @@
 	  
 		 if ((expected_offspring > 0) && (organisms.size() == 0)) 
 		 {
-			System.out.print("\n ERROR:  ATTEMPT TO REPRODUCE OUT OF EMPTY SPECIES");
+			//System.out.print("\n ERROR:  ATTEMPT TO REPRODUCE OUT OF EMPTY SPECIES");
 			return false;
 		 }
 	  
@@ -481,17 +481,17 @@
 		 
 			if (expected_offspring > Neat.p_pop_size) 
 			{
-			   System.out.print("\n ALERT: EXPECTED OFFSPRING = " + expected_offspring);
+			   //System.out.print("\n ALERT: EXPECTED OFFSPRING = " + expected_offspring);
 			}
 		 
 		 //
 		 //If we have a super_champ (Population champion), finish off some special clones
 		 //
-		   System.out.print("\n verifica select....");
+		   //System.out.print("\n verifica select....");
 			if (thechamp.super_champ_offspring > 0) 
 			{
 			
-					 	System.out.print("\n analysis of champion #"+count);
+					 	//System.out.print("\n analysis of champion #"+count);
 			// save in mom current champ;
 			   mom = thechamp;
 			// create a new genome from this copy 
@@ -515,7 +515,7 @@
 			   {
 				  if (thechamp.pop_champ) 
 				  {
-				  			   		System.out.print("\n The new org baby's (champion) genome is : "+baby.genome.getGenome_id());
+				  			   		//System.out.print("\n The new org baby's (champion) genome is : "+baby.genome.getGenome_id());
 					 baby.pop_champ_child = true;
 					 baby.high_fit = mom.orig_fitness;
 				  
@@ -546,13 +546,13 @@
 			//various mutations
 			   if (NeatRoutine.randfloat() < Neat.p_mutate_add_node_prob) 
 			   {
-			   System.out.print("\n ....species.reproduce.mutate add node");
+			   //System.out.print("\n ....species.reproduce.mutate add node");
 				  new_genome.mutate_add_node(pop); 
 				  mut_struct_baby = true;
 			   } 
 			   else if (NeatRoutine.randfloat() < Neat.p_mutate_add_link_prob) 
 			   {
-				System.out.print("\n ....mutate add link");
+				//System.out.print("\n ....mutate add link");
 				  net_analogue = new_genome.genesis(generation);
 				  new_genome.mutate_add_link(pop, Neat.p_newlink_tries);
 				  mut_struct_baby = true;
@@ -563,37 +563,37 @@
 			   //If we didn't do a structural mutation, we do the other kinds
 				  if (NeatRoutine.randfloat() < Neat.p_mutate_random_trait_prob) 
 				  {
-				  System.out.print("\n    ...mutate random trait");
+				  //System.out.print("\n    ...mutate random trait");
 					 new_genome.mutate_random_trait();
 				  }
 			   
 				  if (NeatRoutine.randfloat() < Neat.p_mutate_link_trait_prob) 
 				  {
-				      System.out.print("\n    ...mutate linktrait");
+				      //System.out.print("\n    ...mutate linktrait");
 					 new_genome.mutate_link_trait(1);
 				  }
 			   
 				  if (NeatRoutine.randfloat() < Neat.p_mutate_node_trait_prob) 
 				  {
-				  System.out.print("\n    ...mutate node trait");
+				  //System.out.print("\n    ...mutate node trait");
 					 new_genome.mutate_node_trait(1);
 				  }
 			   
 				  if (NeatRoutine.randfloat() < Neat.p_mutate_link_weights_prob) 
 				  {
-				  System.out.print("\n    ...mutate link weight");
+				  //System.out.print("\n    ...mutate link weight");
 					 new_genome.mutate_link_weight(mut_power, 1.0, NeatConstant.GAUSSIAN);
 				  }
 			   
 				  if (NeatRoutine.randfloat() < Neat.p_mutate_toggle_enable_prob) 
 				  {
-				  System.out.print("\n    ...mutate toggle enable");
+				  //System.out.print("\n    ...mutate toggle enable");
 					 new_genome.mutate_toggle_enable(1);
 				  }
 			   
 				  if (NeatRoutine.randfloat() < Neat.p_mutate_gene_reenable_prob) 
 				  {
-				  System.out.print("\n    ...mutate gene_reenable:");
+				  //System.out.print("\n    ...mutate gene_reenable:");
 					 new_genome.mutate_gene_reenable();
 				  }
 			   } //
@@ -605,7 +605,7 @@
 			else 
 			{
 			//Choose the random mom
-			System.out.print("\n mating .............");
+			//System.out.print("\n mating .............");
 			   orgnum = NeatRoutine.randint(0, poolsize);
 			
 			   _organism = (Organism) organisms.elementAt(orgnum);
@@ -650,17 +650,17 @@
 			
 			   if (NeatRoutine.randfloat() < Neat.p_mate_multipoint_prob) 
 			   {
-			    System.out.print("\n    mate multipoint baby: ");
+			    //System.out.print("\n    mate multipoint baby: ");
 				  new_genome = mom.genome.mate_multipoint(_dad.genome, count, mom.orig_fitness, _dad.orig_fitness); 
 			   } 
 			   else if (NeatRoutine.randfloat() < (Neat.p_mate_multipoint_avg_prob / (Neat.p_mate_multipoint_avg_prob + Neat.p_mate_singlepoint_prob))) 
 			   {
-			    System.out.print("\n    mate multipoint_avg baby: ");
+			    //System.out.print("\n    mate multipoint_avg baby: ");
 				  new_genome = mom.genome.mate_multipoint_avg(_dad.genome, count, mom.orig_fitness, _dad.orig_fitness); 
 			   } 
 			   else 
 			   {
-			    System.out.print("\n    mate siglepoint baby: ");
+			    //System.out.print("\n    mate siglepoint baby: ");
 			   
 				  new_genome = mom.genome.mate_singlepoint(_dad.genome, count);
 			   }
@@ -681,13 +681,13 @@
 			   //various mutations
 				  if (NeatRoutine.randfloat() < Neat.p_mutate_add_node_prob) 
 				  {
-				  System.out.print("\n ....species.mutate add node2");
+				  //System.out.print("\n ....species.mutate add node2");
 					 new_genome.mutate_add_node(pop);
 					 mut_struct_baby = true;
 				  } 
 				  else if (NeatRoutine.randfloat() < Neat.p_mutate_add_link_prob) 
 				  {
-				         System.out.print("\n ....mutate add link2");
+				         //System.out.print("\n ....mutate add link2");
 					 net_analogue = new_genome.genesis(generation);
 					 new_genome.mutate_add_link(pop, Neat.p_newlink_tries);
 					 mut_struct_baby = true;
@@ -698,33 +698,33 @@
 				  //If we didn't do a structural mutation, we do the other kinds
 					 if (NeatRoutine.randfloat() < Neat.p_mutate_random_trait_prob) 
 					 {
-					                 System.out.print("\n    ...mutate random trait");
+					                 //System.out.print("\n    ...mutate random trait");
 						new_genome.mutate_random_trait();
 					 }
 					 if (NeatRoutine.randfloat() < Neat.p_mutate_link_trait_prob) 
 					 {
-					                  System.out.print("\n    ...mutate linktrait");
+					                  //System.out.print("\n    ...mutate linktrait");
 						new_genome.mutate_link_trait(1);
 					 }
 				  
 					 if (NeatRoutine.randfloat() < Neat.p_mutate_node_trait_prob) 
 					 {
-					                System.out.print("\n    ...mutate node trait");
+					                //System.out.print("\n    ...mutate node trait");
 						new_genome.mutate_node_trait(1);
 					 }
 					 if (NeatRoutine.randfloat() < Neat.p_mutate_link_weights_prob) 
 					 {
-					                 System.out.print("\n    ...mutate link weight");
+					                 //System.out.print("\n    ...mutate link weight");
 						new_genome.mutate_link_weight(mut_power, 1.0, NeatConstant.GAUSSIAN);
 					 }
 					 if (NeatRoutine.randfloat() < Neat.p_mutate_toggle_enable_prob) 
 					 {
-					                 System.out.print("\n    ...mutate toggle enable");
+					                 //System.out.print("\n    ...mutate toggle enable");
 						new_genome.mutate_toggle_enable(1);
 					 }
 					 if (NeatRoutine.randfloat() < Neat.p_mutate_gene_reenable_prob) 
 					 {
-					                 System.out.print("\n    ...mutate gene_reenable:");
+					                 //System.out.print("\n    ...mutate gene_reenable:");
 						new_genome.mutate_gene_reenable();
 					 }
 				  } //
@@ -762,7 +762,7 @@
 			else 
 			{
 			// looop in all species.... (each species is a Vector of organism...) of  population 'pop'
-			//System.out.print("\n    this is case of population with species pree-existent");
+			////System.out.print("\n    this is case of population with species pree-existent");
 			   itr_specie = pop.species.iterator();
 			   boolean done = false;
 			
@@ -775,7 +775,7 @@
 			   // compare _organism-esimo('_organism') with first organism in current specie('compare_org')
 				  double curr_compat = baby.genome.compatibility(compare_org.genome);
 			   
-			   //System.out.print("\n     affinity = "+curr_compat);
+			   ////System.out.print("\n     affinity = "+curr_compat);
 				  if (curr_compat < Neat.p_compat_threshold) 
 				  {
 				  //Found compatible species, so add this baby to it
@@ -828,7 +828,7 @@
 		 xFile.IOseqWrite(s2.toString());
 	  
 	  
-	  //   	System.out.print("\n" + s2);
+	  //   	//System.out.print("\n" + s2);
 	  
 		 s2 = new StringBuffer("/*-------------------------------------------------------------------*/"); 
 		 xFile.IOseqWrite(s2.toString());
