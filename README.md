@@ -4,8 +4,7 @@ My controller for Ms. Pac-Man uses a neural network to evaluate the best possibl
 All classes in packages beginning ‘pacman’ belong to the simulation, aside from the ‘pacman.entries.pacman’ package which contains my controller implementation. Modifications were made to the ‘Game’ and ‘Executor’ classes as shown in the Javadoc. The ‘jneat’ and ‘jNeatCommon’ packages belong to the JNEAT library.
 
 To run the program open the .jar file from the command line using the 
-java command. On windows 7 I use the command 'java -jar MsPacManControllerFinal.jar'
-The progam should load a command line interface. If evolving a population, the best 
+java command. The progam should load a command line interface. If evolving a population, the best 
 scoring genomes each generation will be saved as text in the /savedGenomes folder.
 If choosing options 2 or 3 on the menu, one of these champions or the test champion can
 be loaded by typing in the file name or file url. 
