@@ -3,18 +3,6 @@ My controller for Ms. Pac-Man uses a neural network to evaluate the best possibl
 
 All classes in packages beginning ‘pacman’ belong to the simulation, aside from the ‘pacman.entries.pacman’ package which contains my controller implementation. Modifications were made to the ‘Game’ and ‘Executor’ classes as shown in the Javadoc. The ‘jneat’ and ‘jNeatCommon’ packages belong to the JNEAT library.
 
-To run the program open the .jar file from the command line using the 
-java command. The progam should load a command line interface. If evolving a population, the best 
-scoring genomes each generation will be saved as text in the /savedGenomes folder.
-If choosing options 2 or 3 on the menu, one of these champions or the test champion can
-be loaded by typing in the file name or file url. 
-
-At the end of a population evolution a simulation is automatically run using the best
-scoring network. Evolutions can't be saved or loaded, only individual champions. In
-the /savedGenomes folder a .txt file called 'experimentLog.txt' is created at the start
-of each new evolution. The top lines describe the experiment, subsequent lines list the 
-champion scores each generation.
-
 This git repository contains my final eclipse Java project.
 The important aspects of the file structure are described below:
 
@@ -42,6 +30,18 @@ these files can be used to run a simulation, or to evaluate the
 champions over multiple games. As their name suggests, TestChampA is an
 A type (original) controller and TestChampB is a B type (biased) 
 controller. These genomes are two of the best performing networks produced
+
+To run the program open the .jar file from the command line using the 
+java command. The progam should load a command line interface. If evolving a population, the best 
+scoring genomes each generation will be saved as text in the /savedGenomes folder.
+If choosing options 2 or 3 on the menu, one of these champions or the test champion can
+be loaded by typing in the file name or file url. 
+
+At the end of a population evolution a simulation is automatically run using the best
+scoring network. Evolutions can't be saved or loaded, only individual champions. In
+the /savedGenomes folder a .txt file called 'experimentLog.txt' is created at the start
+of each new evolution. The top lines describe the experiment, subsequent lines list the 
+champion scores each generation.
 
 The program was created on windows 7 64-bit using then Eclipse IDE.
 The program was tested on windows 7 and Linux ubuntu 14.X with the
