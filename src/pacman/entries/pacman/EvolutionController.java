@@ -110,7 +110,7 @@ public class EvolutionController {
 		consoleOut_lastGen(networkPopulation, generation);
 		
 		//Save the best contender this generation to a file
-		String fileName = "savedGenomes\\GenChamp" + generation + "_" + (int)bestFitnessThisGen;
+		String fileName = "savedGenomes/GenChamp" + generation + "_" + (int)bestFitnessThisGen;
 		saveNetwork(bestNetworkThisGen, fileName);
 		//Save the best fitness to an experiment log
 		writeToExperimentLog(bestFitnessThisGen);
@@ -136,6 +136,15 @@ public class EvolutionController {
 	 * @return The network
 	 */
 	public Network loadNetwork(String fileName){
+		//Check if the file exists
+		File test = new File(fileName);
+		boolean exists = test.exists();
+		if(!exists){
+			System.out.println("No file found");
+			return null;
+		}
+		
+		//Load the file
 		IOseq newFile = new IOseq(fileName);
 		newFile.IOseqOpenR();
 		Genome champGenome = new Genome(1, newFile);
@@ -211,7 +220,7 @@ public class EvolutionController {
 		FileWriter writer;
 		try {
 			String theLine = fitness + "\n";
-			File theFile = new File ("savedGenomes\\experimentLog.txt");
+			File theFile = new File ("savedGenomes/experimentLog.txt");
 			writer = new FileWriter(theFile, true);
 			writer.write(theLine);
 			writer.flush();

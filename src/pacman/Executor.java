@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.InputMismatchException;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Vector;
@@ -75,25 +76,33 @@ public class Executor
 	public static void main(String[] args)
 	{
 		Executor exec=new Executor();
-		
+		exec.initialise();
+	}
+	
+	private void initialise(){
 		//Let the user choose which side of the program to use
-		Scanner scanner = new Scanner(System.in);
 		int choice = 0;
+		boolean shouldExit = false;
 		
 		System.out.println("Enter 1 to evolve a Ms. Pac-Man controller");
 		System.out.println("Enter 2 to evaluate a saved Ms. Pac-Man controller");
 		System.out.println("Enter 3 to run a single simulation using a saved MS. Pac-Man controller");
-		choice = scanner.nextInt();
+		choice = getConsoleInt("Enter 0 to exit");
 		
 		switch (choice){
-			case 1: exec.evolveAPopulation();
+			case 0: shouldExit = true;
+					break;
+			case 1: evolveAPopulation();
 			 		break;
-			case 2: exec.evaluateNetwork();
+			case 2: evaluateNetwork();
 			 		break;	
-			case 3: exec.runSimulation();
+			case 3: runSimulation();
 			 		break;
-			default: exec.evolveAPopulation();
-					 break;
+		}
+		
+		if(!shouldExit){
+			System.out.println();
+			initialise();
 		}
 	}
 	
@@ -122,6 +131,9 @@ public class Executor
 		//Load the network
 		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
 		Network theNet = evolution.loadNetwork(fileName);
+		if(theNet == null){
+			return;
+		}
 		
 		//Run a simulation
 		System.out.println("Running a generation champion in a simulation");
@@ -132,7 +144,7 @@ public class Executor
 	 * Allows the user to load a network from a file and run X games to find average, min and max socre achieved 
 	 */
 	private void evaluateNetwork(){
-		String fileName;//= "savedGenomes\\OverallChamp"
+		String fileName;
 		Scanner scanner = new Scanner(System.in);
 		int numRuns = 0;
 		
@@ -142,8 +154,7 @@ public class Executor
 		System.out.println("Please input the type of controller('A' for original, 'B' for B type)");
 		pacManControllerType = scanner.nextLine();
 		pacManControllerType = pacManControllerType.toUpperCase();
-		System.out.println("Please the number of games to run: ");
-		numRuns = scanner.nextInt();
+		numRuns = getConsoleInt("Please the number of games to run: ");
 		
 		if(pacManControllerType.equals("B")){
 			System.out.println("Using B type controller");
@@ -156,6 +167,9 @@ public class Executor
 		//Load the network
 		EvolutionController evolution = new EvolutionController(1, netInputs, netOutputs);
 		Network theNet = evolution.loadNetwork(fileName);
+		if(theNet == null){
+			return;
+		}
 		
 		//Run the games
 		double bestScore = 0;
@@ -191,17 +205,14 @@ public class Executor
 		
 		//Ask the user how big the population should be
 		int popSize;
-		System.out.println("Please input what size you want the population to be: ");
-		popSize = scanner.nextInt();
+		popSize = getConsoleInt("Please input what size you want the population to be: ");
 		Neat.p_pop_size = popSize;
 		
 		//Ask the user how many generations to evolve and how many experiments to run during evaluation
 		int numGenerations;
 		int numExperiments;
-		System.out.println("Please input the number of generations to evolve: ");
-		numGenerations = scanner.nextInt();
-		System.out.println("Please input the number of experiments to run per evaluation: ");
-		numExperiments = scanner.nextInt(); scanner.nextLine();
+		numGenerations = getConsoleInt("Please input the number of generations to evolve: ");
+		numExperiments = getConsoleInt("Please input the number of experiments to run per evaluation: ");
 		System.out.println("Please input the type of controller you'd like to evolve ('A' for original, 'B' for B type)");
 		pacManControllerType = scanner.nextLine();
 		pacManControllerType = pacManControllerType.toUpperCase();
@@ -234,7 +245,7 @@ public class Executor
 		FileWriter writer;
 		try {
 			//Create the file, overwriting any existing file
-			File theFile = new File ("savedGenomes\\experimentLog.txt");
+			File theFile = new File ("savedGenomes/experimentLog.txt");
 			writer = new FileWriter(theFile, false);
 			
 			//Write the details of the experiment
@@ -243,7 +254,6 @@ public class Executor
 			writer.write("Number of runs per evaluation: " + numExperiments + "\n");
 			writer.write("Add node chance: " + Neat.p_mutate_add_node_prob + "\n");
 			writer.write("Add link chance: " + Neat.p_mutate_add_link_prob + "\n");
-			writer.write("Species compatability threshold: " + Neat.p_compat_threshold + "\n");
 			
 			//Close the file
 			writer.flush();
@@ -284,18 +294,15 @@ public class Executor
 		}
 		
 		//Save the best contender overall to a file
-		String fileName = "savedGenomes\\OverallChamp";
+		String fileName = "savedGenomes/OverallChamp";
 		evolution.saveNetwork(evolution.getBestNetwork(), fileName);
 		
 		//Ask the user if they want to continue the experiment
-		Scanner scan = new Scanner(System.in);
-		System.out.println("Enter 0 to finish the experiment, enter a number greater than 0 to continue the experiment for that many more generations");
 		int input;
-		input = scan.nextInt();
+		input = getConsoleInt("Enter 0 to finish the experiment, or enter a number greater than 0 to continue the experiment for that many more generations");
 		if(input > 0){
 			runExperiment(evolution, numGenerations, numGenerations+input, numExperiments);
 		}
-		scan.close();
 	}
 	
 	/**
@@ -317,7 +324,12 @@ public class Executor
 			pacManController = new MyPacMan(network, netInputs);
 		}
 		
-		return runGame(pacManController, numLives, ghostController, visual, delay);
+		if(delay > 0){
+			return runGameTimed(pacManController, ghostController, visual);
+		}else{
+			return runGame(pacManController, numLives, ghostController, visual, delay);
+		}
+		
 	}
 	
 	/**
@@ -403,7 +415,7 @@ public class Executor
      * @param ghostController The Ghosts controller
 	 * @param visual Indicates whether or not to use visuals
      */
-    public void runGameTimed(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual)
+    public double runGameTimed(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,boolean visual)
 	{
 		Game game=new Game(0);
 		
@@ -440,6 +452,10 @@ public class Executor
 		
 		pacManController.terminate();
 		ghostController.terminate();
+		
+		//Make note of the games score so that controller fitness can be evaluated
+ 		double lastScore = game.getScore();
+ 		return lastScore;
 	}
 	
     /**
@@ -642,4 +658,26 @@ public class Executor
         
         return replay;
 	}
+    
+    /*
+     * @author Kurt Hodges
+     * Prints the message and captures the next Int that the user inputs
+     */
+    private int getConsoleInt(String message){
+    	Scanner scanner = new Scanner(System.in);
+    	int input = 0;
+    	
+    	System.out.println(message);
+    	try{
+    		input = scanner.nextInt();
+    		scanner.nextLine();
+    	}catch (InputMismatchException exception) 
+    	{ 
+    	    System.out.println("Please enter a number"); 
+    	    scanner.nextLine();
+    	    input = getConsoleInt(message);
+    	} 
+    	
+    	return input;
+    }
 }
