@@ -25,12 +25,6 @@ is unused
 
 The MsPacManControllerFinal.jar file is my final released program.
 
-TestChampA and TestChampB are two saved genome files. Using my program
-these files can be used to run a simulation, or to evaluate the 
-champions over multiple games. As their name suggests, TestChampA is an
-A type (original) controller and TestChampB is a B type (biased) 
-controller. These genomes are two of the best performing networks produced
-
 To run the program open the .jar file from the command line using the 
 java command. The progam should load a command line interface. If evolving a population, the best 
 scoring genomes each generation will be saved as text in the /savedGenomes folder.
@@ -42,6 +36,12 @@ scoring network. Evolutions can't be saved or loaded, only individual champions.
 the /savedGenomes folder a .txt file called 'experimentLog.txt' is created at the start
 of each new evolution. The top lines describe the experiment, subsequent lines list the 
 champion scores each generation.
+
+TestChampA and TestChampB are two saved genome files. Using my program
+these files can be used to run a simulation, or to evaluate the 
+champions over multiple games. As their name suggests, TestChampA is an
+A type (original) controller and TestChampB is a B type (biased) 
+controller. These genomes are two of the best performing networks produced
 
 The program was created on windows 7 64-bit using then Eclipse IDE.
 The program was tested on windows 7 and Linux ubuntu 14.X with the
