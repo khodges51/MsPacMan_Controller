@@ -18,39 +18,6 @@ champion scores each generation.
 The MsPacMan_Controller folder contains my final eclipse Java project.
 The important aspects of the file structure are described below:
 
-/MsPacMan_Controller 
-	/.settings
-	/bin
-	/data
-	/lib 
-	/savedGenomes
-		/LinkChance01
-			/NodeChance001
-			/NodeChance002
-			/NodeChance003
-		/LinkChance02
-			/NodeChance001
-			/NodeChance002
-			/NodeChance003
-		/LinkChance03
-			/NodeChance001
-			/NodeChance002
-			/NodeChance003
-		/BestB_00203
-	/src
-		/jneat
-		/jNeatCommon
-		/pacman
-			/controllers
-				/...
-			/entries
-				/...
-			/game
-				/...
-	/starter_packages
-	/TestChampA.File
-	/TestChampB.File
-
 The /lib folder contains the JNEAT jar
 
 The /savedGenomes folder contains the experiment data produced.
