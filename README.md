@@ -15,7 +15,7 @@ the /savedGenomes folder a .txt file called 'experimentLog.txt' is created at th
 of each new evolution. The top lines describe the experiment, subsequent lines list the 
 champion scores each generation.
 
-The MsPacMan_Controller folder contains my final eclipse Java project.
+This git repository contains my final eclipse Java project.
 The important aspects of the file structure are described below:
 
 The /lib folder contains the JNEAT jar
